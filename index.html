@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GeoNarrow — find the country</title>
+<meta name="description" content="A geography narrowing-down game: the world splits into two regions each round, pick the one holding the target country.">
+<meta name="theme-color" content="#2a78d6">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="viz-root">
+    <header>
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="12" r="9.5" stroke="var(--group-a)" stroke-width="1.6"/>
+          <path d="M2.5 12h19M12 2.5c3 2.8 4.5 6 4.5 9.5s-1.5 6.7-4.5 9.5c-3-2.8-4.5-6-4.5-9.5S9 5.3 12 2.5Z" stroke="var(--group-a)" stroke-width="1.2" fill="none"/>
+          <path d="M12 12l4.2-4.2" stroke="var(--group-b)" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.6" fill="var(--group-b)"/>
+        </svg>
+        <h1>GeoNarrow</h1>
+      </div>
+      <div class="stats">
+        <div class="stat-chip"><span class="v" id="stat-round">–</span><span class="l">Round</span></div>
+        <div class="stat-chip"><span class="v" id="stat-remaining">–</span><span class="l">Left</span></div>
+        <div class="stat-chip"><span class="v" id="stat-mistakes">0</span><span class="l">Mistakes</span></div>
+      </div>
+    </header>
+
+    <div class="mission">
+      <div class="find" id="target-banner">Loading world map…</div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="board">
+      <svg id="map" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip"></div>
+      <div class="kiosk-banner" id="kiosk-banner"></div>
+      <button class="newgame kiosk-exit" id="kiosk-exit">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 18 6M6 6l12 12"/></svg>
+        Exit
+      </button>
+      <div class="legend">
+        <span class="a"><span class="swatch"></span>Region A</span>
+        <span class="b"><span class="swatch"></span>Region B</span>
+        <span class="elim"><span class="swatch"></span>Eliminated</span>
+        <span class="spacer"></span>
+        <label class="switch-label" title="Show country names on hover — off during normal play">
+          <span class="switch">
+            <input type="checkbox" id="discovery-toggle">
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </span>
+          Discovery mode
+        </label>
+        <button class="kiosk-btn" id="kiosk-btn" title="Fullscreen wall/kiosk mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 1-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg>
+          Wall mode
+        </button>
+      </div>
+      <div class="overlay" id="win-overlay">
+        <svg class="medal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <circle cx="12" cy="9" r="6.5"/>
+          <path d="m8 14.5-1.5 6 5.5-2.7 5.5 2.7-1.5-6" stroke-linejoin="round"/>
+          <path d="m9.3 9 1.9 1.9L15 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="big" id="win-title"></div>
+        <div class="sub" id="win-sub"></div>
+        <button class="newgame" id="win-newgame">Play again</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="hint">Click the highlighted region you believe contains the target country. Enable Discovery mode to see country names on hover.</div>
+      <button class="newgame" id="newgame">New game</button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
