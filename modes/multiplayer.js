@@ -155,9 +155,13 @@
   }
 
   function renderResults(room) {
+    // Tiebreak on uid, not just insertion order: Firestore doesn't guarantee
+    // map-field key order is preserved identically across clients, so two
+    // players' browsers could otherwise render a tied match with a
+    // different "winner" each.
     const rows = Object.keys(room.players || {}).map((uid) => ({
       uid, name: room.players[uid].name, score: (room.scores && room.scores[uid]) || 0,
-    })).sort((a, b) => b.score - a.score);
+    })).sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid));
     mpInner.innerHTML =
       '<div class="mp-results"><h2>Match results</h2>' +
       rows.map((r, i) => '<div class="mp-result-row' + (i === 0 ? ' winner' : '') + '">' +
@@ -188,7 +192,9 @@
       'eliminated': (i) => !inSubset.has(i),
     });
     ctx.map.clearFlashClasses();
-    ctx.hud.setTarget('Round ' + room.currentRound + ' / 5 — Step ' + (room.currentStep + 1) + ' / ' + mp.path.length);
+    const roundData = room.rounds && room.rounds[room.currentRound];
+    const targetName = roundData ? ctx.data.names[roundData.target] : '';
+    ctx.hud.setTarget('Find: <b>' + targetName + '</b>');
   }
 
   function startCountdown(room) {
@@ -225,8 +231,9 @@
         '<span class="mp-player-status' + (submitted ? ' submitted' : '') + '">' + (submitted ? '✓' : '…') + '</span>' +
         '</div>';
     }).join('');
+    const stepLabel = 'Round ' + room.currentRound + ' / 5 — Step ' + (room.currentStep + 1) + (mp.path ? ' / ' + mp.path.length : '');
     scoreboardEl.innerHTML =
-      '<div class="mp-scoreboard-head"><span>Round ' + room.currentRound + ' / 5</span><span id="mp-timer">15s</span></div>' + rows;
+      '<div class="mp-scoreboard-head"><span>' + stepLabel + '</span><span id="mp-timer">15s</span></div>' + rows;
   }
 
   function renderMatchState(ctx, room) {
