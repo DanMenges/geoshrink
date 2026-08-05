@@ -180,31 +180,50 @@
   const CHROME_BUFFER = 16;
   const FALLBACK_PAD = 150;
 
-  function measureChromePad() {
+  // buildProjection() runs on every animation frame while dragging/pinching
+  // (see setRotation, called from the rAF loop below) — up to ~60x/sec. Both
+  // measuring the HUD chrome's real size and the portrait-fill geometry pass
+  // below are too expensive to redo that often (getBoundingClientRect forces
+  // a synchronous layout flush; the fill pass is a second full geometry scan
+  // on top of fitExtent's own). Neither actually needs to be live mid-frame:
+  // chrome size only changes on resize/content changes, and freezing the
+  // fill amount for the ~16ms of one gesture is visually imperceptible. Both
+  // are cached and only recomputed when it's actually safe/cheap to do so.
+  let cachedTopPad = null, cachedBottomPad = null;
+  function refreshChromePad() {
     const topEl = document.querySelector('.hud-stack');
     const bottomEl = document.querySelector('.hud-bottom');
-    let topPad = Math.max(PAD, FALLBACK_PAD);
-    let bottomPad = Math.max(PAD, FALLBACK_PAD);
     if (topEl) {
       const r = topEl.getBoundingClientRect();
-      if (r.height > 0) topPad = Math.max(PAD, Math.min(HEIGHT * 0.6, r.bottom + CHROME_BUFFER));
+      if (r.height > 0) cachedTopPad = Math.max(PAD, Math.min(HEIGHT * 0.6, r.bottom + CHROME_BUFFER));
     }
     if (bottomEl) {
       const r = bottomEl.getBoundingClientRect();
-      if (r.height > 0) bottomPad = Math.max(PAD, Math.min(HEIGHT * 0.6, HEIGHT - r.top + CHROME_BUFFER));
+      if (r.height > 0) cachedBottomPad = Math.max(PAD, Math.min(HEIGHT * 0.6, HEIGHT - r.top + CHROME_BUFFER));
     }
-    return { topPad, bottomPad };
   }
+  function getChromePad() {
+    if (cachedTopPad == null || cachedBottomPad == null) refreshChromePad();
+    return {
+      topPad: cachedTopPad != null ? cachedTopPad : Math.max(PAD, FALLBACK_PAD),
+      bottomPad: cachedBottomPad != null ? cachedBottomPad : Math.max(PAD, FALLBACK_PAD),
+    };
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => refreshChromePad());
+    const topEl = document.querySelector('.hud-stack');
+    const bottomEl = document.querySelector('.hud-bottom');
+    if (topEl) ro.observe(topEl);
+    if (bottomEl) ro.observe(bottomEl);
+  }
+
+  let cachedFillFactor = 1;
 
   function buildProjection(subsetFeatures) {
     // Reserve extra room top/bottom so small subsets (e.g. a tiny country paired
     // against a huge one) can't render directly underneath the HUD chrome
-    // (mission banner up top, legend/actions bar at the bottom). Measured live
-    // from the actual DOM rather than a flat guessed constant — a fixed 150px
-    // is right for desktop's compact one-row top bar but wastes a third of a
-    // phone's screen height, since the same 150px chrome height doesn't scale
-    // down just because the viewport got shorter/narrower.
-    const { topPad, bottomPad } = measureChromePad();
+    // (mission banner up top, legend/actions bar at the bottom).
+    const { topPad, bottomPad } = getChromePad();
     const box = { left: PAD, top: topPad, right: WIDTH - PAD, bottom: HEIGHT - bottomPad };
     const featureCollection = { type: 'FeatureCollection', features: subsetFeatures };
     const proj = d3.geoEqualEarth()
@@ -219,16 +238,21 @@
     // actually used and zoom in just enough to fill more of it — capped, so
     // extreme aspect ratios don't crop away too much of the world by default;
     // rotating the globe still reaches whatever falls outside the viewport.
-    const fitBounds = d3.geoPath(proj).bounds(featureCollection);
-    const usedH = fitBounds[1][1] - fitBounds[0][1];
-    const boxH = box.bottom - box.top;
-    if (usedH > 0 && usedH < boxH) {
-      const fillFactor = Math.min(boxH / usedH, 1.65);
-      if (fillFactor > 1.02) {
-        const [tx, ty] = proj.translate();
-        proj.scale(proj.scale() * fillFactor)
-          .translate([fillFactor * tx + (1 - fillFactor) * cx, fillFactor * ty + (1 - fillFactor) * cy]);
-      }
+    // Skipped mid-gesture (see cachedFillFactor above) and refreshed once
+    // more, precisely, right after the gesture ends (see endPointer below).
+    const interacting = (dragState && dragState.moved) || !!pinchState;
+    let fillFactor = cachedFillFactor;
+    if (!interacting) {
+      const fitBounds = d3.geoPath(proj).bounds(featureCollection);
+      const usedH = fitBounds[1][1] - fitBounds[0][1];
+      const boxH = box.bottom - box.top;
+      fillFactor = (usedH > 0 && usedH < boxH) ? Math.min(boxH / usedH, 1.65) : 1;
+      cachedFillFactor = fillFactor;
+    }
+    if (fillFactor > 1.02) {
+      const [tx, ty] = proj.translate();
+      proj.scale(proj.scale() * fillFactor)
+        .translate([fillFactor * tx + (1 - fillFactor) * cx, fillFactor * ty + (1 - fillFactor) * cy]);
     }
 
     if (zoomFactor !== 1) {
@@ -383,6 +407,7 @@
     HEIGHT = window.innerHeight || HEIGHT;
     PAD = Math.round(Math.min(WIDTH, HEIGHT) * 0.05);
     svg.attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`);
+    refreshChromePad();
     const feats = currentSubsetFeatures();
     if (feats) setProjectionImmediate(buildProjection(feats));
   }
@@ -479,9 +504,12 @@
   });
   function endPointer(event) {
     activePointers.delete(event.pointerId);
+    const wasPinching = !!pinchState;
     if (activePointers.size < 2) pinchState = null;
+    let wasDragging = false;
     if (dragState && event.pointerId === dragState.pointerId) {
       if (dragState.moved) {
+        wasDragging = true;
         suppressNextClick = true;
         // Self-clearing: on some browsers/input types a drag-release doesn't
         // synthesize a 'click' at all, which would otherwise leave this flag
@@ -489,6 +517,14 @@
         setTimeout(() => { suppressNextClick = false; }, 350);
       }
       dragState = null;
+    }
+    if (wasDragging || wasPinching) {
+      // One precise, non-cached frame now that the gesture has actually
+      // ended (dragState/pinchState are cleared above), so the resting view
+      // gets an accurate portrait-fill amount rather than whatever was
+      // frozen for the last in-flight drag frame.
+      const feats = currentSubsetFeatures();
+      if (feats) setProjectionImmediate(buildProjection(feats));
     }
   }
   svgEl.addEventListener('pointerup', endPointer);
