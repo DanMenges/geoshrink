@@ -18,12 +18,6 @@
   const gradB = defs.append('linearGradient').attr('id', 'grad-group-b').attr('x1', '0%').attr('y1', '0%').attr('x2', '100%').attr('y2', '100%');
   gradB.append('stop').attr('offset', '0%').attr('style', 'stop-color: var(--group-b)');
   gradB.append('stop').attr('offset', '100%').attr('style', 'stop-color: color-mix(in srgb, var(--group-b) 55%, white)');
-  // Vertical light-to-dark gradient for the Dinosaur theme's body-mass
-  // stroke (objectBoundingBox coordinates, so it auto-adapts top-to-bottom
-  // per creature without per-species tuning) — a rounded-torso illusion.
-  const dinoBodyGrad = defs.append('linearGradient').attr('id', 'dino-body-grad').attr('x1', '0%').attr('y1', '0%').attr('x2', '0%').attr('y2', '100%');
-  dinoBodyGrad.append('stop').attr('offset', '0%').attr('stop-color', '#6b4a2c');
-  dinoBodyGrad.append('stop').attr('offset', '100%').attr('stop-color', '#1c130a');
 
   const gFrame = svg.append('g');
   const gGraticule = gFrame.append('path').attr('class', 'graticule');
@@ -34,101 +28,46 @@
   const graticuleData = d3.geoGraticule10();
 
   // --- Dinosaur theme: five continent-appropriate species, placed at the
-  // real region each is famously associated with (fossil sites, not a
-  // vague "somewhere on the continent" guess). Multiply-blended low-opacity
-  // watermark with pointer-events:none, so it never affects click targets.
-  // Shapes are simple flat silhouettes built from a handful of primitives —
-  // built once here, repositioned every redraw via updateDinoPositions().
+  // real region each is famously associated with (actual fossil sites).
+  // Real paleoart silhouettes (PhyloPic, CC0/public domain — see
+  // web/dino/CREDITS.md), not hand-drawn shapes: fetched once (cached
+  // offline by the service worker like any other asset), normalized to a
+  // common size regardless of each source SVG's native scale, then
+  // repositioned every redraw via updateDinoPositions(). pointer-events:none
+  // throughout, so they never affect click targets.
   const DINO_SPECIES = [
-    { id: 'trex', label: 'T. rex', lon: -106, lat: 46, scale: 1.4 },              // Montana/Alberta badlands
-    { id: 'spino', label: 'Spinosaurus', lon: 12, lat: 20, scale: 1.4 },          // Sahara (Egypt/Morocco)
-    { id: 'raptor', label: 'Velociraptor', lon: 103, lat: 44, scale: 1.15 },      // Gobi Desert, Mongolia
-    { id: 'iguanodon', label: 'Iguanodon', lon: 4, lat: 51, scale: 1.25 },        // Bernissart, Belgium
-    { id: 'muttaburrasaurus', label: 'Muttaburrasaurus', lon: 145, lat: -23, scale: 1.25 }, // Muttaburra, Queensland
+    { id: 'trex', file: 'dino/trex.svg', lon: -106, lat: 46, scale: 0.62 },              // Montana/Alberta badlands
+    { id: 'spino', file: 'dino/spinosaurus.svg', lon: 12, lat: 20, scale: 0.62 },         // Sahara (Egypt/Morocco)
+    { id: 'raptor', file: 'dino/velociraptor.svg', lon: 103, lat: 44, scale: 0.55 },      // Gobi Desert, Mongolia
+    { id: 'iguanodon', file: 'dino/iguanodon.svg', lon: 4, lat: 51, scale: 0.55 },        // Bernissart, Belgium
+    { id: 'australovenator', file: 'dino/australovenator.svg', lon: 145, lat: -23, scale: 0.58 }, // Winton, Queensland
   ];
-  // Skeleton/fossil style — a curved spine + angular skull reads as
-  // unmistakably "dinosaur" from just a few strokes, is far more forgiving
-  // to hand-draw recognizably than a solid anatomical silhouette, and fits
-  // the fossil-hunt theme better than a flat blob would. `cls: 'dino-bone'`
-  // shapes are thick rounded strokes (spine/legs), 'dino-thin' are fine
-  // stroke details (teeth/claw/spikes/sail), 'dino-eye' a small filled dot,
-  // 'dino-skull' the one filled mass per creature. 'dino-body' is a soft
-  // gradient-shaded wide stroke traced along the SAME spine curve — a cheap
-  // way to suggest a rounded 3D torso without risking the shapeless-blob
-  // problem a separate filled silhouette caused earlier (see git history).
-  // 'dino-leg1'/'dino-leg2' additionally mark the two legs so CSS can swing
-  // them in a walk cycle for a bit of life/motion.
-  const DINO_SHAPES = {
-    trex: [
-      { tag: 'path', cls: 'dino-body', d: 'M -115,20 Q -55,-20 -15,-12 Q 12,-6 22,-30 Q 32,-44 55,-48' },
-      { tag: 'path', cls: 'dino-bone', d: 'M -115,20 Q -55,-20 -15,-12 Q 12,-6 22,-30 Q 32,-44 55,-48' },
-      { tag: 'path', cls: 'dino-skull', d: 'M 55,-52 L 100,-36 L 60,-22 Z' },
-      { tag: 'circle', cls: 'dino-eye', cx: 68, cy: -40, r: 4 },
-      { tag: 'path', cls: 'dino-thin', d: 'M 62,-25 L 66,-20 L 70,-25 L 74,-20 L 78,-25 L 82,-20 L 86,-25' },
-      { tag: 'path', cls: 'dino-thin', d: 'M 26,-30 L 40,-22' },
-      { tag: 'path', cls: 'dino-bone dino-leg1', d: 'M -70,-2 L -80,46' },
-      { tag: 'path', cls: 'dino-bone dino-leg2', d: 'M -45,-8 L -50,46' },
-    ],
-    spino: [
-      { tag: 'path', cls: 'dino-body', d: 'M -118,22 Q -60,-14 -20,-10 Q 5,-6 20,-20 Q 40,-34 78,-30' },
-      { tag: 'path', cls: 'dino-bone', d: 'M -118,22 Q -60,-14 -20,-10 Q 5,-6 20,-20 Q 40,-34 78,-30' },
-      { tag: 'path', cls: 'dino-skull', d: 'M 78,-34 L 128,-24 L 82,-14 Z' },
-      { tag: 'circle', cls: 'dino-eye', cx: 90, cy: -26, r: 3.5 },
-      { tag: 'path', cls: 'dino-thin', d: 'M -30,-8 L -28,-45' },
-      { tag: 'path', cls: 'dino-thin', d: 'M -15,-10 L -12,-58' },
-      { tag: 'path', cls: 'dino-thin', d: 'M 0,-10 L 4,-65' },
-      { tag: 'path', cls: 'dino-thin', d: 'M 15,-16 L 20,-58' },
-      { tag: 'path', cls: 'dino-bone dino-leg1', d: 'M -60,0 L -66,46' },
-      { tag: 'path', cls: 'dino-bone dino-leg2', d: 'M -25,-4 L -20,46' },
-    ],
-    raptor: [
-      { tag: 'path', cls: 'dino-body', d: 'M -95,15 Q -50,-14 -18,-8 Q 0,-4 8,-20 Q 16,-30 36,-32' },
-      { tag: 'path', cls: 'dino-bone', d: 'M -95,15 Q -50,-14 -18,-8 Q 0,-4 8,-20 Q 16,-30 36,-32' },
-      { tag: 'path', cls: 'dino-skull', d: 'M 36,-34 L 62,-26 L 38,-18 Z' },
-      { tag: 'circle', cls: 'dino-eye', cx: 44, cy: -27, r: 2.6 },
-      { tag: 'path', cls: 'dino-thin', d: 'M 40,-22 L 43,-18 L 46,-22 L 49,-18 L 52,-22' },
-      { tag: 'path', cls: 'dino-bone dino-leg1', d: 'M -30,-4 L -34,32' },
-      { tag: 'path', cls: 'dino-bone dino-leg2', d: 'M -10,-8 L -6,10 L -16,18' },
-      { tag: 'path', cls: 'dino-thin', d: 'M -16,18 Q -24,22 -18,28' },
-    ],
-    iguanodon: [
-      { tag: 'path', cls: 'dino-body', d: 'M -105,20 Q -50,-18 -10,-14 Q 15,-10 26,-26 Q 36,-38 62,-38' },
-      { tag: 'path', cls: 'dino-bone', d: 'M -105,20 Q -50,-18 -10,-14 Q 15,-10 26,-26 Q 36,-38 62,-38' },
-      { tag: 'path', cls: 'dino-skull', d: 'M 62,-40 L 100,-30 L 66,-20 Z' },
-      { tag: 'circle', cls: 'dino-eye', cx: 75, cy: -30, r: 3.5 },
-      { tag: 'path', cls: 'dino-thin', d: 'M 20,-8 L 26,-22' },
-      { tag: 'path', cls: 'dino-bone dino-leg1', d: 'M -55,-4 L -60,44' },
-      { tag: 'path', cls: 'dino-bone dino-leg2', d: 'M -20,-8 L -18,44' },
-    ],
-    muttaburrasaurus: [
-      { tag: 'path', cls: 'dino-body', d: 'M -100,20 Q -48,-16 -8,-12 Q 14,-8 24,-24 Q 34,-36 58,-36' },
-      { tag: 'path', cls: 'dino-bone', d: 'M -100,20 Q -48,-16 -8,-12 Q 14,-8 24,-24 Q 34,-36 58,-36' },
-      { tag: 'path', cls: 'dino-skull', d: 'M 58,-38 L 92,-28 L 62,-18 Z' },
-      { tag: 'circle', cls: 'dino-skull', cx: 68, cy: -42, r: 7 },
-      { tag: 'circle', cls: 'dino-eye', cx: 70, cy: -28, r: 3.5 },
-      { tag: 'path', cls: 'dino-bone dino-leg1', d: 'M -50,-2 L -55,42' },
-      { tag: 'path', cls: 'dino-bone dino-leg2', d: 'M -18,-6 L -16,42' },
-    ],
-  };
-  gDino.selectAll('g.dino-figure')
+  const DINO_TARGET_W = 150; // normalized silhouette width, before the per-species `scale` above
+
+  const dinoGroups = gDino.selectAll('g.dino-figure')
     .data(DINO_SPECIES, (d) => d.id)
     .join('g')
-    .attr('class', (d) => 'dino-figure dino-' + d.id)
-    .each(function (d) {
-      const g = d3.select(this);
-      (DINO_SHAPES[d.id] || []).forEach((shape) => {
-        let el;
-        if (shape.tag === 'ellipse') {
-          el = g.append('ellipse').attr('cx', shape.cx).attr('cy', shape.cy).attr('rx', shape.rx).attr('ry', shape.ry);
-          if (shape.rotate) el.attr('transform', `rotate(${shape.rotate} ${shape.cx} ${shape.cy})`);
-        } else if (shape.tag === 'circle') {
-          el = g.append('circle').attr('cx', shape.cx).attr('cy', shape.cy).attr('r', shape.r);
-        } else {
-          el = g.append('path').attr('d', shape.d);
-        }
-        if (shape.cls) el.attr('class', shape.cls);
-      });
-    });
+    .attr('class', (d) => 'dino-figure dino-' + d.id);
+  dinoGroups.each(function (d) {
+    const g = d3.select(this);
+    fetch(d.file).then((r) => r.text()).then((svgText) => {
+      const vb = svgText.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+      const path = svgText.match(/<path\s+d="([^"]+)"/);
+      const innerG = svgText.match(/<g\s+([^>]*)>/s);
+      if (!vb || !path) return;
+      const vbW = parseFloat(vb[1]), vbH = parseFloat(vb[2]);
+      const f = DINO_TARGET_W / vbW;
+      const scaledW = vbW * f, scaledH = vbH * f;
+      const innerTransform = (innerG && innerG[1].match(/transform="([^"]*)"/) || [])[1] || '';
+      // Nesting: outer position (JS, per-redraw) -> walk-cycle wrapper (CSS
+      // animation) -> normalize-to-common-size -> the source SVG's own
+      // internal transform, unchanged, so its path data still maps correctly.
+      const walkWrap = g.append('g').attr('class', 'dino-walk');
+      const norm = walkWrap.append('g').attr('transform', `translate(${-scaledW / 2},${-scaledH}) scale(${f})`);
+      norm.append('g').attr('transform', innerTransform)
+        .append('path').attr('class', 'dino-silhouette').attr('d', path[1]);
+    }).catch(() => {});
+  });
   function updateDinoPositions() {
     if (!projection) return;
     gDino.selectAll('g.dino-figure').each(function (d) {
@@ -267,7 +206,6 @@
     gSphere.attr('d', pathGen({ type: 'Sphere' }));
     updateDinoPositions();
     renderLabels();
-    renderPopulationMountains();
   }
 
   function setProjectionImmediate(newProjection) {
@@ -392,137 +330,6 @@
         this.style.display = d.show ? '' : 'none';
         if (d.valid) { this.setAttribute('x', d.x); this.setAttribute('y', d.y); }
       });
-  }
-
-  // --- population terrain (World Atlas, Population theme only) -------------
-  // A real continuous height field: every country contributes a 2D Gaussian
-  // centered on its projected centroid (its "mean"), weighted and widened
-  // by population, summed across a grid — actual kernel-density-style
-  // terrain, not discrete per-country shapes. Rendered to a coarse offscreen
-  // canvas, then hillshaded (a simulated light source against the local
-  // surface slope, standard Lambertian terrain-relief shading) and scaled
-  // up with smoothing onto the visible canvas for a soft, continuous 3D
-  // relief look. A separate CSS-animated sheen overlay (map.js never
-  // touches it) adds a slow light sweep without needing to recompute
-  // anything.
-  const terrainCanvas = document.getElementById('pop-terrain-canvas');
-  const terrainSheen = document.getElementById('pop-terrain-sheen');
-  const GRID_W = 160, GRID_H = 90;
-  const gridCanvas = document.createElement('canvas');
-  gridCanvas.width = GRID_W;
-  gridCanvas.height = GRID_H;
-  const gridCtx = gridCanvas.getContext('2d');
-  const TERRAIN_LUT = (() => {
-    const stops = [[74, 96, 138], [255, 209, 102], [255, 140, 66], [230, 57, 70]];
-    const lut = new Array(256);
-    for (let i = 0; i < 256; i++) {
-      const t = (i / 255) * (stops.length - 1);
-      const idx = Math.min(stops.length - 2, Math.floor(t));
-      const localT = t - idx;
-      const a = stops[idx], b = stops[idx + 1];
-      lut[i] = [a[0] + (b[0] - a[0]) * localT, a[1] + (b[1] - a[1]) * localT, a[2] + (b[2] - a[2]) * localT];
-    }
-    return lut;
-  })();
-
-  let terrainIndices = [];
-  let terrainLevels = null;
-  let terrainActive = false;
-  function setPopulationMountains(indices, levels) {
-    terrainIndices = indices || [];
-    terrainLevels = levels || null;
-    terrainActive = terrainIndices.length > 0;
-    terrainCanvas.classList.toggle('show', terrainActive);
-    terrainSheen.classList.toggle('show', terrainActive);
-    if (!terrainActive) {
-      const octx = terrainCanvas.getContext('2d');
-      octx.clearRect(0, 0, terrainCanvas.width, terrainCanvas.height);
-      return;
-    }
-    renderPopulationMountains();
-  }
-  function renderPopulationMountains() {
-    if (!terrainActive || !pathGen) return;
-    const pts = [];
-    terrainIndices.forEach((i) => {
-      const feature = getFeature(i);
-      const c = feature && pathGen.centroid(feature);
-      if (!c || !isFinite(c[0]) || !isFinite(c[1])) return;
-      const level = terrainLevels && terrainLevels[i] != null ? terrainLevels[i] : 0;
-      pts.push({ x: c[0], y: c[1], level: Math.max(0, Math.min(1, level)) });
-    });
-    if (!pts.length) return;
-
-    const sx = GRID_W / WIDTH, sy = GRID_H / HEIGHT;
-    const SIGMA_MIN = 2.2, SIGMA_MAX = 6.5; // grid cells — country's "spread", not a fixed dot size
-    const height = new Float32Array(GRID_W * GRID_H);
-    // MAX-blend, not sum: summing ~170 overlapping Gaussians makes any
-    // crowded region (Europe, the Sahel) saturate into one undifferentiated
-    // blob, since density there comes from many *neighbors* overlapping,
-    // not from any single country's population. Taking the max keeps each
-    // country's own peak legible — real adjacent peaks merge into a ridge
-    // (as real terrain does) instead of the whole region flattening into a
-    // single dome.
-    pts.forEach((p) => {
-      const gx = p.x * sx, gy = p.y * sy;
-      const sigma = SIGMA_MIN + (SIGMA_MAX - SIGMA_MIN) * p.level;
-      const weight = 0.05 + Math.pow(p.level, 1.15) * 0.95;
-      const radius = Math.ceil(sigma * 3);
-      const x0 = Math.max(0, Math.floor(gx - radius)), x1 = Math.min(GRID_W - 1, Math.ceil(gx + radius));
-      const y0 = Math.max(0, Math.floor(gy - radius)), y1 = Math.min(GRID_H - 1, Math.ceil(gy + radius));
-      const twoSigma2 = 2 * sigma * sigma;
-      for (let yy = y0; yy <= y1; yy++) {
-        const dy = yy - gy;
-        const rowBase = yy * GRID_W;
-        for (let xx = x0; xx <= x1; xx++) {
-          const dx = xx - gx;
-          const v = weight * Math.exp(-(dx * dx + dy * dy) / twoSigma2);
-          if (v > height[rowBase + xx]) height[rowBase + xx] = v;
-        }
-      }
-    });
-
-    let maxH = 0;
-    for (let k = 0; k < height.length; k++) if (height[k] > maxH) maxH = height[k];
-    if (maxH <= 0) maxH = 1;
-
-    const img = gridCtx.createImageData(GRID_W, GRID_H);
-    const data = img.data;
-    const lx = -0.62, ly = -0.5, lz = 0.6; // light from upper-left, already ~unit length
-    for (let y = 0; y < GRID_H; y++) {
-      for (let x = 0; x < GRID_W; x++) {
-        const idx = y * GRID_W + x;
-        const h = height[idx] / maxH;
-        const hL = height[y * GRID_W + Math.max(0, x - 1)] / maxH;
-        const hR = height[y * GRID_W + Math.min(GRID_W - 1, x + 1)] / maxH;
-        const hU = height[Math.max(0, y - 1) * GRID_W + x] / maxH;
-        const hD = height[Math.min(GRID_H - 1, y + 1) * GRID_W + x] / maxH;
-        const nx = -(hR - hL) * 22, ny = -(hD - hU) * 22, nz = 1;
-        const nl = Math.hypot(nx, ny, nz);
-        const shade = Math.max(0, (nx / nl) * lx + (ny / nl) * ly + (nz / nl) * lz);
-        const light = 0.4 + 0.6 * shade;
-
-        const c = TERRAIN_LUT[Math.max(0, Math.min(255, Math.round(h * 255)))];
-        const px = idx * 4;
-        data[px] = Math.min(255, c[0] * light);
-        data[px + 1] = Math.min(255, c[1] * light);
-        data[px + 2] = Math.min(255, c[2] * light);
-        data[px + 3] = Math.round(255 * Math.min(1, h * 3.2));
-      }
-    }
-    gridCtx.putImageData(img, 0, 0);
-
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const pxW = Math.round(WIDTH * dpr), pxH = Math.round(HEIGHT * dpr);
-    if (terrainCanvas.width !== pxW || terrainCanvas.height !== pxH) {
-      terrainCanvas.width = pxW;
-      terrainCanvas.height = pxH;
-    }
-    const outCtx = terrainCanvas.getContext('2d');
-    outCtx.imageSmoothingEnabled = true;
-    if ('imageSmoothingQuality' in outCtx) outCtx.imageSmoothingQuality = 'high';
-    outCtx.clearRect(0, 0, terrainCanvas.width, terrainCanvas.height);
-    outCtx.drawImage(gridCanvas, 0, 0, GRID_W, GRID_H, 0, 0, terrainCanvas.width, terrainCanvas.height);
   }
 
   let resizeTimer;
@@ -660,7 +467,7 @@
     drawBaseMap, paintClasses, clearFlashClasses, flashCountries,
     setActiveFeatureIndices, setFiftyMFeatures, onNeedHighRes, setBaseFeatures,
     setRotation, getRotation, getZoom, resetRotation,
-    setLabels, setPopulationMountains,
+    setLabels,
     get projection() { return projection; },
     get pathGen() { return pathGen; },
     get activeTier() { return activeTier; },

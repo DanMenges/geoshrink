@@ -21,12 +21,14 @@
     root.classList.remove('map-style-flat', 'map-style-glow', 'map-style-scifi', 'map-style-dino', 'map-style-population');
     root.classList.add('map-style-' + (theme.style || 'flat'));
 
-    // Themed tiers override the backdrop + "not in play" colors so they read
-    // as a deliberate palette rather than a themed map floating in the
-    // default pale ocean/gray. Removing the property (not just leaving it
-    // unset) lets Classic and any theme without an override fall back
-    // cleanly to the normal light/dark value.
-    const overrides = { '--ocean': theme.ocean, '--graticule': theme.graticule, '--eliminated-fill': theme.eliminatedFill, '--eliminated-stroke': theme.eliminatedStroke };
+    // Some themes override the ocean/graticule backdrop so they read as a
+    // deliberate palette rather than a themed map floating in the default
+    // pale ocean. Removing the property (not just leaving it unset) lets
+    // Classic and any theme without an override fall back cleanly to the
+    // normal light/dark value. "Not in play" (eliminated) countries are
+    // deliberately NEVER themed — they stay the plain neutral gray shared
+    // with the legend swatch, regardless of equipped theme.
+    const overrides = { '--ocean': theme.ocean, '--graticule': theme.graticule };
     for (const prop in overrides) {
       if (overrides[prop]) root.style.setProperty(prop, overrides[prop]); else root.style.removeProperty(prop);
     }

@@ -1,9 +1,8 @@
 (function () {
   const GN = window.GN = window.GN || {};
 
-  function pickTarget(ctx) {
-    const pool = ctx.state.pool;
-    return pool[Math.floor(Math.random() * pool.length)];
+  function pickFlagTarget(ctx) {
+    return GN.progression.pickTarget(ctx.state.pool);
   }
 
   function repaint(ctx) {
@@ -17,7 +16,7 @@
 
   function nextRound(ctx) {
     ctx.state.inputLocked = false;
-    ctx.state.targetIdx = pickTarget(ctx);
+    ctx.state.targetIdx = pickFlagTarget(ctx);
     const meta = ctx.data.metaByIdx(ctx.state.targetIdx);
     ctx.hud.setPanel('<img class="flag-img" src="flags/' + meta.iso2 + '.svg" alt="Flag to identify">');
     ctx.hud.setTarget('Which country does this flag belong to?');
@@ -42,7 +41,7 @@
 
   const mode = {
     setup(ctx) {
-      ctx.state = { targetIdx: null, inputLocked: false, pool: GN.progression.scopePool(ctx.data.metaIndices) };
+      ctx.state = { targetIdx: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
         { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },

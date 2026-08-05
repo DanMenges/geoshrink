@@ -74,7 +74,7 @@
 
   const mode = {
     setup(ctx) {
-      ctx.state = { org: null, impostor: null, all: [], inputLocked: false, pool: GN.progression.scopePool(ctx.data.metaIndices) };
+      ctx.state = { org: null, impostor: null, all: [], inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
         { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },

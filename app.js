@@ -123,6 +123,19 @@
   });
 
   if ('serviceWorker' in navigator) {
+    // Auto-reload once when a newer service worker takes control. Without
+    // this, an already-open tab keeps running the JS/HTML it loaded with
+    // even after a new SW has installed and activated in the background —
+    // the classic "why isn't my update showing" trap (this app's own
+    // history includes several rounds of exactly that). One programmatic
+    // reload, guarded so it can only ever fire once per page load, fixes it
+    // for good instead of relying on the player finding DevTools.
+    let swRefreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (swRefreshed) return;
+      swRefreshed = true;
+      window.location.reload();
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     });

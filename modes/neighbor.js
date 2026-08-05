@@ -1,10 +1,10 @@
 (function () {
   const GN = window.GN = window.GN || {};
 
-  function pickTarget(ctx) {
+  function pickNeighborTarget(ctx) {
     const withNeighbors = ctx.state.pool.filter((i) => ctx.data.neighbors[i].length > 0);
     const pool = withNeighbors.length ? withNeighbors : ctx.state.pool;
-    return pool[Math.floor(Math.random() * pool.length)];
+    return GN.progression.pickTarget(pool);
   }
 
   function repaint(ctx) {
@@ -22,7 +22,7 @@
   function nextRound(ctx) {
     ctx.selection.clear();
     ctx.state.inputLocked = false;
-    ctx.state.targetIdx = pickTarget(ctx);
+    ctx.state.targetIdx = pickNeighborTarget(ctx);
     ctx.state.trueNeighbors = new Set(
       ctx.data.neighbors[ctx.state.targetIdx].filter((n) => ctx.state.pool.includes(n))
     );
@@ -72,7 +72,7 @@
 
   const mode = {
     setup(ctx) {
-      ctx.state = { targetIdx: null, trueNeighbors: null, inputLocked: false, pool: GN.progression.scopePool(ctx.data.playableIndices) };
+      ctx.state = { targetIdx: null, trueNeighbors: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.playableIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
         { id: 'selected', value: '0', label: 'Selected' },

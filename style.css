@@ -92,30 +92,6 @@ body {
   overflow: hidden;
 }
 svg#map { display: block; width: 100%; height: 100%; }
-.pop-terrain-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 400ms ease; }
-.pop-terrain-canvas.show { opacity: 1; }
-/* A slow diagonal light sweep across the terrain — cheap (pure CSS, no
-   recompute), tasteful motion so the population view feels alive rather
-   than a static render. */
-.pop-terrain-sheen {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  mix-blend-mode: overlay;
-  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.35) 50%, transparent 65%);
-  background-size: 300% 300%;
-  background-position: 120% -20%;
-  transition: opacity 500ms ease;
-}
-.pop-terrain-sheen.show { opacity: 1; animation: popSheenSweep 9s ease-in-out infinite; }
-@keyframes popSheenSweep {
-  0% { background-position: 120% -20%; }
-  50% { background-position: -20% 120%; }
-  100% { background-position: 120% -20%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pop-terrain-sheen.show { animation: none; }
-}
 .graticule { fill: none; stroke: var(--graticule); stroke-width: 0.6; }
 .sphere-outline { fill: none; stroke: var(--graticule); stroke-width: 1; }
 
@@ -193,49 +169,32 @@ svg#map { display: block; width: 100%; height: 100%; }
 .map-style-dino .country.group-b { fill: url(#grad-group-b); filter: drop-shadow(0 0 2.5px var(--group-b)); }
 .map-style-dino .country { stroke: var(--graticule); }
 .dino-illustrations { pointer-events: none; opacity: 0; transition: opacity 400ms ease; }
-/* Fossil-skeleton style: a thick curved spine + angular skull reads as
-   "dinosaur" from just a few strokes — far more forgiving than trying to
-   fill a whole anatomical silhouette. .dino-body is a wide gradient-shaded
-   stroke traced along the same spine curve, underneath the bone line, to
-   suggest a rounded 3D torso without the shapeless-blob risk a separate
-   filled silhouette had. Legs get a slow walk-cycle swing for some life. */
-.dino-figure { fill: #2b2013; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
-.dino-figure .dino-body { fill: none; stroke: url(#dino-body-grad); stroke-width: 15; stroke-linecap: round; opacity: 0.65; }
-.dino-figure .dino-bone { fill: none; stroke: #2b2013; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
-.dino-figure .dino-thin { fill: none; stroke: #2b2013; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
-.dino-figure .dino-eye { fill: #f4e9d0; }
-.dino-figure .dino-skull { fill: #2b2013; }
-.dino-figure .dino-leg1, .dino-figure .dino-leg2 {
-  transform-box: fill-box;
-  transform-origin: top center;
-  animation: dinoWalk 1.8s ease-in-out infinite;
-}
-.dino-figure .dino-leg2 { animation-direction: reverse; }
-@keyframes dinoWalk {
-  0%, 100% { transform: rotate(-7deg); }
-  50% { transform: rotate(7deg); }
+/* Real paleoart silhouettes (see web/dino/CREDITS.md), not hand-drawn
+   shapes — a single traced path per creature, recolored via fill and
+   grounded with a drop shadow. .dino-walk applies a small pacing/bob
+   animation (translate + slight rotate) so each creature reads as walking
+   in place rather than a static decal. */
+.dino-figure { pointer-events: none; }
+.dino-figure .dino-silhouette { fill: #2b2013; }
+.dino-figure { filter: drop-shadow(0 3px 2px rgba(0,0,0,0.35)); }
+.dino-figure .dino-walk { animation: dinoPace 6s ease-in-out infinite; }
+@keyframes dinoPace {
+  0%, 100% { transform: translate(0,0) rotate(0deg); }
+  25%      { transform: translate(-3px,-2px) rotate(-1.5deg); }
+  50%      { transform: translate(0,0) rotate(0deg); }
+  75%      { transform: translate(3px,-2px) rotate(1.5deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dino-figure .dino-leg1, .dino-figure .dino-leg2 { animation: none; }
+  .dino-figure .dino-walk { animation: none; }
 }
 
 /* Population (300): each group's hue ramps from pale to fully saturated by
    that country's (log-scaled) population, via the --pop custom property
-   map.js stamps on every path. World Atlas goes further and replaces its
-   whole view with a real continuous Gaussian-density terrain (map.js's
-   canvas-rendered #pop-terrain-canvas — hillshaded, tallest and reddest
-   where population is densest) since "compare the whole world at once" is
-   exactly what that mode is for. */
+   map.js stamps on every path. Quiz modes only — World Atlas deliberately
+   stays theme-agnostic (see modes/atlas.js), always the same clean
+   continent view regardless of equipped theme. */
 .map-style-population .country.group-a { fill: color-mix(in srgb, var(--group-a) calc(20% + var(--pop, 0.5) * 75%), white); }
 .map-style-population .country.group-b { fill: color-mix(in srgb, var(--group-b) calc(20% + var(--pop, 0.5) * 75%), white); }
-
-/* World Atlas's dedicated view when the Population theme is equipped: every
-   country fades to a muted dark "canvas" so the terrain reads as the real
-   subject. Not nested under .map-style-population so it renders the same
-   regardless of which theme class is active elsewhere. */
-.country.pop-base { fill: #131a2e; stroke: #2a2f52; cursor: default; }
-.pop-legend { display: flex; align-items: center; gap: 8px; }
-.pop-scale-bar { display: inline-block; width: 140px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #4a6088, #ffd166, #ff8c42, #e63946); vertical-align: -1px; }
 .country.fog-known { fill: var(--group-a); opacity: 0.55; cursor: default; }
 .country.fog-frontier { fill: var(--guessable); cursor: pointer; }
 .country.exp-done { fill: var(--group-a); opacity: 0.55; cursor: default; }
@@ -751,8 +710,6 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   cursor: pointer;
 }
 .tier-chip.active { background: var(--group-a); border-color: var(--group-a); color: #ffffff; }
-.tier-chip.locked { color: var(--text-muted); cursor: not-allowed; opacity: 0.7; }
-.tier-lock { font-weight: 600; display: inline-flex; align-items: center; gap: 3px; vertical-align: -1px; }
 
 .mode-grid {
   display: grid;
@@ -796,6 +753,111 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   border-top: 1px solid var(--border);
 }
 .home-footer-note { font-size: 11.5px; color: var(--text-muted); }
+
+/* multiplayer -------------------------------------------------------------- */
+.mp-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--good) 12%, var(--surface-1)), var(--surface-1)); color: var(--good); }
+
+.multiplayer-screen {
+  position: absolute;
+  inset: 0;
+  background: var(--page-plane);
+  overflow-y: auto;
+  z-index: 2;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+.multiplayer-screen.show { opacity: 1; visibility: visible; pointer-events: auto; }
+.mp-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px clamp(16px, 3vw, 48px);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+.mp-topbar h1 { font-size: 16px; font-weight: 800; margin: 0; color: var(--text-primary); }
+.mp-inner { max-width: 480px; margin: 0 auto; padding: 32px 20px; }
+
+.mp-menu { display: flex; flex-direction: column; gap: 12px; }
+.mp-big-btn { padding: 16px; font-size: 15px; justify-content: center; }
+
+.mp-form { display: flex; flex-direction: column; gap: 14px; }
+.mp-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); }
+.mp-form input, .mp-form select {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+.mp-form-actions { display: flex; justify-content: space-between; gap: 10px; }
+
+.mp-room-code { font-size: 20px; font-weight: 800; color: var(--text-primary); text-align: center; margin-bottom: 4px; }
+.mp-lobby { display: flex; flex-direction: column; gap: 10px; }
+.mp-lobby-players { display: flex; flex-direction: column; gap: 6px; margin: 6px 0; }
+.mp-lobby-player {
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+.mp-results { display: flex; flex-direction: column; gap: 10px; }
+.mp-results h2 { margin: 0 0 4px; font-size: 18px; color: var(--text-primary); }
+.mp-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+.mp-result-row.winner { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--surface-1)); }
+.mp-result-rank { font-weight: 800; color: var(--text-muted); width: 28px; }
+.mp-result-name { flex: 1; font-weight: 700; color: var(--text-primary); }
+.mp-result-score { font-weight: 800; color: var(--guessable); font-variant-numeric: tabular-nums; }
+
+/* live-match scoreboard — a dedicated floating panel, not the single-player
+   #stats-container (built for one player's stat row, not a multi-player
+   roster with per-player submitted status). */
+.mp-scoreboard {
+  position: absolute;
+  top: 132px;
+  right: max(12px, env(safe-area-inset-right));
+  width: 210px;
+  z-index: 4;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  font-size: 12.5px;
+}
+.mp-scoreboard:empty { display: none; }
+.mp-scoreboard-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-weight: 800;
+  background: color-mix(in srgb, var(--group-a) 12%, var(--surface-1));
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+}
+.mp-player-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-top: 1px solid var(--border); }
+.mp-player-row:first-of-type { border-top: none; }
+.mp-player-row.me { background: color-mix(in srgb, var(--group-a) 8%, transparent); }
+.mp-player-name { flex: 1; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-player-score { font-weight: 800; color: var(--guessable); font-variant-numeric: tabular-nums; }
+.mp-player-status { width: 16px; text-align: center; color: var(--text-muted); }
+.mp-player-status.submitted { color: var(--good); }
 
 /* responsive ------------------------------------------------------------- */
 @media (max-width: 640px) {

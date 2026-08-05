@@ -11,7 +11,7 @@
 
   function pickRound(ctx) {
     const pool = ctx.state.pool;
-    const targetIdx = pool[Math.floor(Math.random() * pool.length)];
+    const targetIdx = GN.progression.pickTarget(pool);
     const choices = new Set([targetIdx]);
     while (choices.size < 4 && choices.size < pool.length) {
       choices.add(pool[Math.floor(Math.random() * pool.length)]);
@@ -63,7 +63,7 @@
 
   const mode = {
     setup(ctx) {
-      ctx.state = { targetIdx: null, choices: [], inputLocked: false, pool: GN.progression.scopePool(ctx.data.metaIndices) };
+      ctx.state = { targetIdx: null, choices: [], inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
         { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },

@@ -8,7 +8,7 @@
   // Difficulty (shared with the rest of the app via the Home-screen tier
   // picker) controls path length here rather than candidate-pool size, since
   // a "harder" expedition is a longer journey, not a bigger guessing pool.
-  const LEGS_BY_TIER = { explorer: 4, traveler: 10, navigator: 20, globetrotter: 25 };
+  const LEGS_BY_DIFFICULTY = { easy: 4, medium: 12, hard: 25 };
 
   function largestComponent(neighbors, pool) {
     const poolSet = new Set(pool);
@@ -161,8 +161,8 @@
 
   const mode = {
     setup(ctx) {
-      const tier = GN.progression.getSelectedTier();
-      const desiredLegs = LEGS_BY_TIER[tier.id] || LEGS_BY_TIER.explorer;
+      const difficulty = GN.progression.getSelectedDifficulty();
+      const desiredLegs = LEGS_BY_DIFFICULTY[difficulty.id] || LEGS_BY_DIFFICULTY.easy;
       ctx.state = {
         component: largestComponent(ctx.data.neighbors, ctx.data.playableIndices),
         route: null, pos: 1, supplies: START_SUPPLIES, inputLocked: false,

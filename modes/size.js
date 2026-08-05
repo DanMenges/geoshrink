@@ -3,9 +3,9 @@
 
   function pickPair(ctx) {
     const pool = ctx.state.pool;
-    let a = pool[Math.floor(Math.random() * pool.length)];
+    const a = GN.progression.pickTarget(pool);
     let b = a;
-    while (b === a) b = pool[Math.floor(Math.random() * pool.length)];
+    while (b === a && pool.length > 1) b = GN.progression.pickTarget(pool);
     return [a, b];
   }
 
@@ -52,7 +52,7 @@
 
   const mode = {
     setup(ctx) {
-      ctx.state = { pair: null, inputLocked: false, rounds: 0, pool: GN.progression.scopePool(ctx.data.playableIndices) };
+      ctx.state = { pair: null, inputLocked: false, rounds: 0, pool: GN.progression.buildPool(ctx.data.playableIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
         { id: 'rounds', value: '0', label: 'Rounds' },

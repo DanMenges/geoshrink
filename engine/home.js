@@ -53,28 +53,24 @@
     document.getElementById('home-best-streak').textContent = 'Best streak: ' + GN.progression.getBestStreak();
   }
 
-  function renderTierPicker() {
-    const selected = GN.progression.getSelectedTierId();
-    const level = GN.progression.getLevel();
-    const html = GN.progression.TIERS.map((t) => {
-      const unlocked = t.unlockLevel <= level;
-      const cls = 'tier-chip' + (t.id === selected && unlocked ? ' active' : '') + (unlocked ? '' : ' locked');
-      const lockIcon = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-      return '<button class="' + cls + '" data-tier="' + t.id + '"' + (unlocked ? '' : ' disabled') + '>' +
-        t.label + (unlocked ? '' : ' <span class="tier-lock">' + lockIcon + ' Lv.' + t.unlockLevel + '</span>') +
-        '</button>';
-    }).join('');
-    document.getElementById('tier-picker').innerHTML = html;
-    document.querySelectorAll('.tier-chip:not(.locked)').forEach((btn) => {
+  function renderDifficultyPicker() {
+    const selected = GN.progression.getSelectedDifficultyId();
+    const html = GN.progression.DIFFICULTIES.map((d) =>
+      '<button class="tier-chip' + (d.id === selected ? ' active' : '') + '" data-difficulty="' + d.id + '">' + d.label + '</button>'
+    ).join('');
+    document.getElementById('difficulty-picker').innerHTML = html;
+    document.querySelectorAll('#difficulty-picker .tier-chip').forEach((btn) => {
       btn.addEventListener('click', () => {
-        GN.progression.setSelectedTier(btn.getAttribute('data-tier'));
-        renderTierPicker();
+        GN.progression.setSelectedDifficulty(btn.getAttribute('data-difficulty'));
+        renderDifficultyPicker();
       });
     });
   }
 
   function renderModeGrid() {
-    const html = MODE_CARDS.map((m, i) =>
+    const showFlags = GN.progression.getShowFlags();
+    const cards = MODE_CARDS.filter((m) => m.id !== 'flags' || showFlags);
+    const html = cards.map((m, i) =>
       '<button class="mode-card" data-mode="' + m.id + '" style="animation-delay:' + (i * 35) + 'ms">' +
       svgIcon(m.id) +
       '<span class="mode-title">' + m.title + '</span>' +
@@ -106,7 +102,7 @@
 
   function show() {
     renderLevelBadge();
-    renderTierPicker();
+    renderDifficultyPicker();
     renderDailyCallout();
     renderModeGrid();
     homeScreen.classList.add('show');
@@ -118,10 +114,21 @@
     boardEl.classList.remove('hidden');
     GN.heroGlobe.stop();
   }
+  // Like hide(), but leaves .board hidden — for screens that aren't the map
+  // (e.g. the multiplayer lobby), which shouldn't reveal the board until a
+  // live match actually starts.
+  function hideToOtherScreen() {
+    homeScreen.classList.remove('show');
+    GN.heroGlobe.stop();
+  }
 
   function enterMode(modeId) {
     if (!GN.data) {
       GN.hud.showToast('Still loading the map — one moment…');
+      return;
+    }
+    if (modeId === 'flags' && !GN.progression.getShowFlags()) {
+      GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Flag Frenzy.');
       return;
     }
     hide();
@@ -135,9 +142,17 @@
     if (!window.confirm('Reset all progress (level, XP, and Fog of War exploration)? This cannot be undone.')) return;
     GN.storage.reset();
     renderLevelBadge();
-    renderTierPicker();
+    renderDifficultyPicker();
     renderDailyCallout();
+    renderModeGrid();
   });
 
-  GN.home = { show, hide, enterMode, renderLevelBadge };
+  const showFlagsToggle = document.getElementById('show-flags-toggle');
+  showFlagsToggle.checked = GN.progression.getShowFlags();
+  showFlagsToggle.addEventListener('change', () => {
+    GN.progression.setShowFlags(showFlagsToggle.checked);
+    renderModeGrid();
+  });
+
+  GN.home = { show, hide, hideToOtherScreen, enterMode, renderLevelBadge };
 })();
