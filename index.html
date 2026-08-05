@@ -17,32 +17,34 @@
       <svg id="map"></svg>
       <div class="tooltip" id="tooltip"></div>
 
-      <div class="hud hud-top">
-        <div class="brand-chip">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="12" cy="12" r="9.5" stroke="var(--group-a)" stroke-width="1.6"/>
-            <path d="M2.5 12h19M12 2.5c3 2.8 4.5 6 4.5 9.5s-1.5 6.7-4.5 9.5c-3-2.8-4.5-6-4.5-9.5S9 5.3 12 2.5Z" stroke="var(--group-a)" stroke-width="1.2" fill="none"/>
-            <path d="M12 12l4.2-4.2" stroke="var(--group-b)" stroke-width="1.8" stroke-linecap="round"/>
-            <circle cx="12" cy="12" r="1.6" fill="var(--group-b)"/>
-          </svg>
-          <span>GeoShrink</span>
+      <div class="hud-stack" id="hud-stack">
+        <div class="hud hud-top">
+          <div class="brand-chip">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="12" cy="12" r="9.5" stroke="var(--group-a)" stroke-width="1.6"/>
+              <path d="M2.5 12h19M12 2.5c3 2.8 4.5 6 4.5 9.5s-1.5 6.7-4.5 9.5c-3-2.8-4.5-6-4.5-9.5S9 5.3 12 2.5Z" stroke="var(--group-a)" stroke-width="1.2" fill="none"/>
+              <path d="M12 12l4.2-4.2" stroke="var(--group-b)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="1.6" fill="var(--group-b)"/>
+            </svg>
+            <span class="brand-chip-text">GeoShrink</span>
+          </div>
+          <div class="stats" id="stats-container"></div>
+          <button class="wallet-chip" id="wallet-chip" title="Coin wallet — click to open the shop">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.3 0 0 1 2.6-1.8c1.5 0 2.6.9 2.6 2s-1 1.6-2.6 2-2.6.9-2.6 2 1.1 2 2.6 2a2.6 2.3 0 0 0 2.6-1.8" stroke-linecap="round"/><path d="M12 6v1.3M12 16.7V18"/></svg>
+            <span id="wallet-amount">0</span>
+          </button>
+          <button class="hud-btn icon-only" id="home-btn" title="Back to Home">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
+          </button>
         </div>
-        <div class="stats" id="stats-container"></div>
-        <button class="wallet-chip" id="wallet-chip" title="Coin wallet — click to open the shop">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.3 0 0 1 2.6-1.8c1.5 0 2.6.9 2.6 2s-1 1.6-2.6 2-2.6.9-2.6 2 1.1 2 2.6 2a2.6 2.3 0 0 0 2.6-1.8" stroke-linecap="round"/><path d="M12 6v1.3M12 16.7V18"/></svg>
-          <span id="wallet-amount">0</span>
-        </button>
-        <button class="hud-btn icon-only" id="home-btn" title="Back to Home">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
-        </button>
-      </div>
 
-      <div class="hud hud-mission">
-        <div class="find" id="target-banner">Loading world map…</div>
-        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      </div>
+        <div class="hud hud-mission">
+          <div class="find" id="target-banner">Loading world map…</div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
 
-      <div class="mp-scoreboard" id="mp-scoreboard"></div>
+        <div class="mp-scoreboard" id="mp-scoreboard"></div>
+      </div>
 
       <div class="hud hud-bottom">
         <div class="legend" id="mode-legend"></div>

@@ -177,20 +177,61 @@
 
   // --- projection -----------------------------------------------------------
 
+  const CHROME_BUFFER = 16;
+  const FALLBACK_PAD = 150;
+
+  function measureChromePad() {
+    const topEl = document.querySelector('.hud-stack');
+    const bottomEl = document.querySelector('.hud-bottom');
+    let topPad = Math.max(PAD, FALLBACK_PAD);
+    let bottomPad = Math.max(PAD, FALLBACK_PAD);
+    if (topEl) {
+      const r = topEl.getBoundingClientRect();
+      if (r.height > 0) topPad = Math.max(PAD, Math.min(HEIGHT * 0.6, r.bottom + CHROME_BUFFER));
+    }
+    if (bottomEl) {
+      const r = bottomEl.getBoundingClientRect();
+      if (r.height > 0) bottomPad = Math.max(PAD, Math.min(HEIGHT * 0.6, HEIGHT - r.top + CHROME_BUFFER));
+    }
+    return { topPad, bottomPad };
+  }
+
   function buildProjection(subsetFeatures) {
     // Reserve extra room top/bottom so small subsets (e.g. a tiny country paired
-    // against a huge one) can't render directly underneath the fixed HUD chrome
-    // (mission banner up top, legend/actions bar at the bottom).
-    const topPad = Math.max(PAD, 150);
-    const bottomPad = Math.max(PAD, 150);
+    // against a huge one) can't render directly underneath the HUD chrome
+    // (mission banner up top, legend/actions bar at the bottom). Measured live
+    // from the actual DOM rather than a flat guessed constant — a fixed 150px
+    // is right for desktop's compact one-row top bar but wastes a third of a
+    // phone's screen height, since the same 150px chrome height doesn't scale
+    // down just because the viewport got shorter/narrower.
+    const { topPad, bottomPad } = measureChromePad();
+    const box = { left: PAD, top: topPad, right: WIDTH - PAD, bottom: HEIGHT - bottomPad };
+    const featureCollection = { type: 'FeatureCollection', features: subsetFeatures };
     const proj = d3.geoEqualEarth()
       .rotate([rotation[0], rotation[1], 0])
-      .fitExtent(
-        [[PAD, topPad], [WIDTH - PAD, HEIGHT - bottomPad]],
-        { type: 'FeatureCollection', features: subsetFeatures }
-      );
+      .fitExtent([[box.left, box.top], [box.right, box.bottom]], featureCollection);
+    const cx = WIDTH / 2, cy = (box.top + box.bottom) / 2;
+
+    // A "contain" fit of a ~2:1 world map into a tall, narrow portrait box is
+    // width-bound, leaving most of the box's height empty (this is the map
+    // looking tiny, stranded in a sea of empty ocean color, on a phone). Once
+    // the natural fit is known, measure how much of the box's height it
+    // actually used and zoom in just enough to fill more of it — capped, so
+    // extreme aspect ratios don't crop away too much of the world by default;
+    // rotating the globe still reaches whatever falls outside the viewport.
+    const fitBounds = d3.geoPath(proj).bounds(featureCollection);
+    const usedH = fitBounds[1][1] - fitBounds[0][1];
+    const boxH = box.bottom - box.top;
+    if (usedH > 0 && usedH < boxH) {
+      const fillFactor = Math.min(boxH / usedH, 1.65);
+      if (fillFactor > 1.02) {
+        const [tx, ty] = proj.translate();
+        proj.scale(proj.scale() * fillFactor)
+          .translate([fillFactor * tx + (1 - fillFactor) * cx, fillFactor * ty + (1 - fillFactor) * cy]);
+      }
+    }
+
     if (zoomFactor !== 1) {
-      const cx = WIDTH / 2, cy = (topPad + (HEIGHT - bottomPad)) / 2;
       const [tx, ty] = proj.translate();
       proj.scale(proj.scale() * zoomFactor)
         .translate([zoomFactor * tx + (1 - zoomFactor) * cx, zoomFactor * ty + (1 - zoomFactor) * cy]);

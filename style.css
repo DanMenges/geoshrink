@@ -216,7 +216,6 @@ svg#map { display: block; width: 100%; height: 100%; }
 
 /* HUD: overlaid chips, always opaque for guaranteed contrast ------------ */
 .hud {
-  position: absolute;
   z-index: 4;
   display: flex;
   align-items: center;
@@ -225,10 +224,26 @@ svg#map { display: block; width: 100%; height: 100%; }
 }
 .hud > * { pointer-events: auto; }
 
-.hud-top {
+/* hud-top + hud-mission + mp-scoreboard live in this single flow column so
+   the mission banner and scoreboard always land below however tall hud-top
+   actually rendered (1 row on desktop, 2-3 wrapped rows on a narrow phone)
+   instead of guessing a fixed pixel offset that overlaps on smaller screens. */
+.hud-stack {
+  position: absolute;
   top: max(12px, env(safe-area-inset-top));
   left: max(12px, env(safe-area-inset-left));
   right: max(12px, env(safe-area-inset-right));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.hud-stack > * { pointer-events: auto; }
+
+.hud-top {
+  width: 100%;
   justify-content: space-between;
   flex-wrap: wrap;
 }
@@ -284,9 +299,6 @@ svg#map { display: block; width: 100%; height: 100%; }
 .stat-chip.stat-points .v { color: var(--guessable); }
 
 .hud-mission {
-  top: 68px;
-  left: 50%;
-  transform: translateX(-50%);
   max-width: min(92vw, 560px);
   width: 100%;
   flex-direction: column;
@@ -829,10 +841,9 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
    #stats-container (built for one player's stat row, not a multi-player
    roster with per-player submitted status). */
 .mp-scoreboard {
-  position: absolute;
-  top: 132px;
-  right: max(12px, env(safe-area-inset-right));
+  align-self: flex-end;
   width: 210px;
+  max-width: 100%;
   z-index: 4;
   background: var(--surface-1);
   border: 1px solid var(--border);
@@ -867,14 +878,23 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .home-topbar { padding: 10px 14px; }
   .home-tagline { display: none; } /* keep the top bar to one compact row on small screens */
   .level-badge { min-width: 0; padding: 5px 10px; }
-  .hud-top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); }
-  .brand-chip { padding: 6px 9px; }
-  .brand-chip span { font-size: 13px; } /* keep the title visible while playing, just tighter */
-  .brand-chip svg { width: 18px; height: 18px; }
-  .stat-chip { min-width: 46px; padding: 4px 8px; }
-  .hud-mission { top: 60px; padding: 8px 14px; }
+
+  .hud-stack { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 7px; }
+  .brand-chip { padding: 6px 8px; }
+  .brand-chip-text { display: none; } /* icon-only wordmark — the row is tight enough during gameplay without it */
+  .brand-chip svg { width: 19px; height: 19px; }
+  .stat-chip { min-width: 40px; padding: 4px 7px; }
+  .stat-chip .v { font-size: 12.5px; }
+  .stat-chip .l { font-size: 8.5px; }
+  .wallet-chip { padding: 6px 9px; font-size: 12px; }
+  .hud-mission { padding: 8px 14px; }
   .find { font-size: 13px; }
   .find b { font-size: 15px; }
+  .mp-scoreboard { width: 100%; align-self: stretch; } /* right-docked sidebar doesn't fit next to a near-full-width mission banner on phones — stack instead */
+
+  /* icon-only HUD buttons keep a touch-friendly hit area even as content shrinks */
+  button.hud-btn.icon-only { padding: 10px; }
+
   .hud-bottom { bottom: max(8px, env(safe-area-inset-bottom)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); }
   .hint { display: none; } /* save space; discoverable via the legend + buttons */
   .actions { justify-content: space-between; }
