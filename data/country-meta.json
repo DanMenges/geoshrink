@@ -1,0 +1,1955 @@
+{
+ "asOf": "2026-08",
+ "countries": {
+  "AFG": {
+   "capital": "Kabul",
+   "continent": "Asia",
+   "iso2": "af",
+   "orgs": [
+    "UN"
+   ],
+   "population": 42000000,
+   "subregion": "Southern Asia"
+  },
+  "AGO": {
+   "capital": "Luanda",
+   "continent": "Africa",
+   "iso2": "ao",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 36000000,
+   "subregion": "Middle Africa"
+  },
+  "ALB": {
+   "capital": "Tirana",
+   "continent": "Europe",
+   "iso2": "al",
+   "orgs": [
+    "UN"
+   ],
+   "population": 2800000,
+   "subregion": "Southeast Europe"
+  },
+  "ARE": {
+   "capital": "Abu Dhabi",
+   "continent": "Asia",
+   "iso2": "ae",
+   "orgs": [
+    "UN",
+    "OPEC"
+   ],
+   "population": 9500000,
+   "subregion": "Western Asia"
+  },
+  "ARG": {
+   "capital": "Buenos Aires",
+   "continent": "Americas",
+   "iso2": "ar",
+   "orgs": [
+    "UN",
+    "G20"
+   ],
+   "population": 46000000,
+   "subregion": "South America"
+  },
+  "ARM": {
+   "capital": "Yerevan",
+   "continent": "Asia",
+   "iso2": "am",
+   "orgs": [
+    "UN"
+   ],
+   "population": 3000000,
+   "subregion": "Western Asia"
+  },
+  "ATF": {
+   "capital": "Port-aux-Français",
+   "continent": "Antarctic",
+   "iso2": "tf",
+   "orgs": [],
+   "population": 1000,
+   "subregion": ""
+  },
+  "AUS": {
+   "capital": "Canberra",
+   "continent": "Oceania",
+   "iso2": "au",
+   "orgs": [
+    "UN",
+    "G20",
+    "COMMONWEALTH"
+   ],
+   "population": 26000000,
+   "subregion": "Australia and New Zealand"
+  },
+  "AUT": {
+   "capital": "Vienna",
+   "continent": "Europe",
+   "iso2": "at",
+   "orgs": [
+    "UN",
+    "EU",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 9100000,
+   "subregion": "Central Europe"
+  },
+  "AZE": {
+   "capital": "Baku",
+   "continent": "Asia",
+   "iso2": "az",
+   "orgs": [
+    "UN"
+   ],
+   "population": 10400000,
+   "subregion": "Western Asia"
+  },
+  "BDI": {
+   "capital": "Gitega",
+   "continent": "Africa",
+   "iso2": "bi",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 13000000,
+   "subregion": "Eastern Africa"
+  },
+  "BEL": {
+   "capital": "Brussels",
+   "continent": "Europe",
+   "iso2": "be",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 11700000,
+   "subregion": "Western Europe"
+  },
+  "BEN": {
+   "capital": "Porto-Novo",
+   "continent": "Africa",
+   "iso2": "bj",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 13700000,
+   "subregion": "Western Africa"
+  },
+  "BFA": {
+   "capital": "Ouagadougou",
+   "continent": "Africa",
+   "iso2": "bf",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 23000000,
+   "subregion": "Western Africa"
+  },
+  "BGD": {
+   "capital": "Dhaka",
+   "continent": "Asia",
+   "iso2": "bd",
+   "orgs": [
+    "UN"
+   ],
+   "population": 173000000,
+   "subregion": "Southern Asia"
+  },
+  "BGR": {
+   "capital": "Sofia",
+   "continent": "Europe",
+   "iso2": "bg",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO"
+   ],
+   "population": 6400000,
+   "subregion": "Southeast Europe"
+  },
+  "BHS": {
+   "capital": "Nassau",
+   "continent": "Americas",
+   "iso2": "bs",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 400000,
+   "subregion": "Caribbean"
+  },
+  "BIH": {
+   "capital": "Sarajevo",
+   "continent": "Europe",
+   "iso2": "ba",
+   "orgs": [
+    "UN"
+   ],
+   "population": 3200000,
+   "subregion": "Southeast Europe"
+  },
+  "BLR": {
+   "capital": "Minsk",
+   "continent": "Europe",
+   "iso2": "by",
+   "orgs": [
+    "UN"
+   ],
+   "population": 9200000,
+   "subregion": "Eastern Europe"
+  },
+  "BLZ": {
+   "capital": "Belmopan",
+   "continent": "Americas",
+   "iso2": "bz",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 400000,
+   "subregion": "Central America"
+  },
+  "BOL": {
+   "capital": "Sucre",
+   "continent": "Americas",
+   "iso2": "bo",
+   "orgs": [
+    "UN"
+   ],
+   "population": 12200000,
+   "subregion": "South America"
+  },
+  "BRA": {
+   "capital": "Brasília",
+   "continent": "Americas",
+   "iso2": "br",
+   "orgs": [
+    "UN",
+    "G20",
+    "BRICS"
+   ],
+   "population": 216000000,
+   "subregion": "South America"
+  },
+  "BRN": {
+   "capital": "Bandar Seri Begawan",
+   "continent": "Asia",
+   "iso2": "bn",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 450000,
+   "subregion": "South-Eastern Asia"
+  },
+  "BTN": {
+   "capital": "Thimphu",
+   "continent": "Asia",
+   "iso2": "bt",
+   "orgs": [
+    "UN"
+   ],
+   "population": 780000,
+   "subregion": "Southern Asia"
+  },
+  "BWA": {
+   "capital": "Gaborone",
+   "continent": "Africa",
+   "iso2": "bw",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 2400000,
+   "subregion": "Southern Africa"
+  },
+  "CAF": {
+   "capital": "Bangui",
+   "continent": "Africa",
+   "iso2": "cf",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 5500000,
+   "subregion": "Middle Africa"
+  },
+  "CAN": {
+   "capital": "Ottawa",
+   "continent": "Americas",
+   "iso2": "ca",
+   "orgs": [
+    "UN",
+    "G7",
+    "G20",
+    "NATO",
+    "COMMONWEALTH"
+   ],
+   "population": 39000000,
+   "subregion": "North America"
+  },
+  "CHE": {
+   "capital": "Bern",
+   "continent": "Europe",
+   "iso2": "ch",
+   "orgs": [
+    "UN"
+   ],
+   "population": 8800000,
+   "subregion": "Western Europe"
+  },
+  "CHL": {
+   "capital": "Santiago",
+   "continent": "Americas",
+   "iso2": "cl",
+   "orgs": [
+    "UN"
+   ],
+   "population": 19600000,
+   "subregion": "South America"
+  },
+  "CHN": {
+   "capital": "Beijing",
+   "continent": "Asia",
+   "iso2": "cn",
+   "orgs": [
+    "UN",
+    "G20",
+    "BRICS"
+   ],
+   "population": 1410000000,
+   "subregion": "Eastern Asia"
+  },
+  "CIV": {
+   "capital": "Yamoussoukro",
+   "continent": "Africa",
+   "iso2": "ci",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 29000000,
+   "subregion": "Western Africa"
+  },
+  "CMR": {
+   "capital": "Yaoundé",
+   "continent": "Africa",
+   "iso2": "cm",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 28000000,
+   "subregion": "Middle Africa"
+  },
+  "COD": {
+   "capital": "Kinshasa",
+   "continent": "Africa",
+   "iso2": "cd",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 102000000,
+   "subregion": "Middle Africa"
+  },
+  "COG": {
+   "capital": "Brazzaville",
+   "continent": "Africa",
+   "iso2": "cg",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 5800000,
+   "subregion": "Middle Africa"
+  },
+  "COL": {
+   "capital": "Bogotá",
+   "continent": "Americas",
+   "iso2": "co",
+   "orgs": [
+    "UN"
+   ],
+   "population": 52000000,
+   "subregion": "South America"
+  },
+  "CRI": {
+   "capital": "San José",
+   "continent": "Americas",
+   "iso2": "cr",
+   "orgs": [
+    "UN"
+   ],
+   "population": 5100000,
+   "subregion": "Central America"
+  },
+  "CUB": {
+   "capital": "Havana",
+   "continent": "Americas",
+   "iso2": "cu",
+   "orgs": [
+    "UN"
+   ],
+   "population": 11000000,
+   "subregion": "Caribbean"
+  },
+  "CYP": {
+   "capital": "Nicosia",
+   "continent": "Europe",
+   "iso2": "cy",
+   "orgs": [
+    "UN",
+    "EU"
+   ],
+   "population": 1250000,
+   "subregion": "Southern Europe"
+  },
+  "CZE": {
+   "capital": "Prague",
+   "continent": "Europe",
+   "iso2": "cz",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO"
+   ],
+   "population": 10900000,
+   "subregion": "Central Europe"
+  },
+  "DEU": {
+   "capital": "Berlin",
+   "continent": "Europe",
+   "iso2": "de",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "G7",
+    "G20",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 84000000,
+   "subregion": "Western Europe"
+  },
+  "DJI": {
+   "capital": "Djibouti",
+   "continent": "Africa",
+   "iso2": "dj",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 1100000,
+   "subregion": "Eastern Africa"
+  },
+  "DNK": {
+   "capital": "Copenhagen",
+   "continent": "Europe",
+   "iso2": "dk",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO"
+   ],
+   "population": 5900000,
+   "subregion": "Northern Europe"
+  },
+  "DOM": {
+   "capital": "Santo Domingo",
+   "continent": "Americas",
+   "iso2": "do",
+   "orgs": [
+    "UN"
+   ],
+   "population": 11300000,
+   "subregion": "Caribbean"
+  },
+  "DZA": {
+   "capital": "Algiers",
+   "continent": "Africa",
+   "iso2": "dz",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 46000000,
+   "subregion": "Northern Africa"
+  },
+  "ECU": {
+   "capital": "Quito",
+   "continent": "Americas",
+   "iso2": "ec",
+   "orgs": [
+    "UN"
+   ],
+   "population": 18000000,
+   "subregion": "South America"
+  },
+  "EGY": {
+   "capital": "Cairo",
+   "continent": "Africa",
+   "iso2": "eg",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 113000000,
+   "subregion": "Northern Africa"
+  },
+  "ERI": {
+   "capital": "Asmara",
+   "continent": "Africa",
+   "iso2": "er",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 3700000,
+   "subregion": "Eastern Africa"
+  },
+  "ESH": {
+   "capital": "El Aaiún",
+   "continent": "Africa",
+   "iso2": "eh",
+   "orgs": [
+    "AU"
+   ],
+   "population": 600000,
+   "subregion": "Northern Africa"
+  },
+  "ESP": {
+   "capital": "Madrid",
+   "continent": "Europe",
+   "iso2": "es",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 48000000,
+   "subregion": "Southern Europe"
+  },
+  "EST": {
+   "capital": "Tallinn",
+   "continent": "Europe",
+   "iso2": "ee",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 1370000,
+   "subregion": "Northern Europe"
+  },
+  "ETH": {
+   "capital": "Addis Ababa",
+   "continent": "Africa",
+   "iso2": "et",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 127000000,
+   "subregion": "Eastern Africa"
+  },
+  "FIN": {
+   "capital": "Helsinki",
+   "continent": "Europe",
+   "iso2": "fi",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 5600000,
+   "subregion": "Northern Europe"
+  },
+  "FJI": {
+   "capital": "Suva",
+   "continent": "Oceania",
+   "iso2": "fj",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 930000,
+   "subregion": "Melanesia"
+  },
+  "FLK": {
+   "capital": "Stanley",
+   "continent": "Americas",
+   "iso2": "fk",
+   "orgs": [],
+   "population": 3500,
+   "subregion": "South America"
+  },
+  "FRA": {
+   "capital": "Paris",
+   "continent": "Europe",
+   "iso2": "fr",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "G7",
+    "G20",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 68000000,
+   "subregion": "Western Europe"
+  },
+  "GAB": {
+   "capital": "Libreville",
+   "continent": "Africa",
+   "iso2": "ga",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 2400000,
+   "subregion": "Middle Africa"
+  },
+  "GBR": {
+   "capital": "London",
+   "continent": "Europe",
+   "iso2": "gb",
+   "orgs": [
+    "UN",
+    "NATO",
+    "G7",
+    "G20",
+    "COMMONWEALTH"
+   ],
+   "population": 68000000,
+   "subregion": "Northern Europe"
+  },
+  "GEO": {
+   "capital": "Tbilisi",
+   "continent": "Asia",
+   "iso2": "ge",
+   "orgs": [
+    "UN"
+   ],
+   "population": 3700000,
+   "subregion": "Western Asia"
+  },
+  "GHA": {
+   "capital": "Accra",
+   "continent": "Africa",
+   "iso2": "gh",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 34000000,
+   "subregion": "Western Africa"
+  },
+  "GIN": {
+   "capital": "Conakry",
+   "continent": "Africa",
+   "iso2": "gn",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 14000000,
+   "subregion": "Western Africa"
+  },
+  "GMB": {
+   "capital": "Banjul",
+   "continent": "Africa",
+   "iso2": "gm",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 2700000,
+   "subregion": "Western Africa"
+  },
+  "GNB": {
+   "capital": "Bissau",
+   "continent": "Africa",
+   "iso2": "gw",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 2100000,
+   "subregion": "Western Africa"
+  },
+  "GNQ": {
+   "capital": "Malabo",
+   "continent": "Africa",
+   "iso2": "gq",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 1700000,
+   "subregion": "Middle Africa"
+  },
+  "GRC": {
+   "capital": "Athens",
+   "continent": "Europe",
+   "iso2": "gr",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 10400000,
+   "subregion": "Southern Europe"
+  },
+  "GRL": {
+   "capital": "Nuuk",
+   "continent": "Americas",
+   "iso2": "gl",
+   "orgs": [],
+   "population": 56000,
+   "subregion": "North America"
+  },
+  "GTM": {
+   "capital": "Guatemala City",
+   "continent": "Americas",
+   "iso2": "gt",
+   "orgs": [
+    "UN"
+   ],
+   "population": 18000000,
+   "subregion": "Central America"
+  },
+  "GUY": {
+   "capital": "Georgetown",
+   "continent": "Americas",
+   "iso2": "gy",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 810000,
+   "subregion": "South America"
+  },
+  "HND": {
+   "capital": "Tegucigalpa",
+   "continent": "Americas",
+   "iso2": "hn",
+   "orgs": [
+    "UN"
+   ],
+   "population": 10600000,
+   "subregion": "Central America"
+  },
+  "HRV": {
+   "capital": "Zagreb",
+   "continent": "Europe",
+   "iso2": "hr",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 3900000,
+   "subregion": "Southeast Europe"
+  },
+  "HTI": {
+   "capital": "Port-au-Prince",
+   "continent": "Americas",
+   "iso2": "ht",
+   "orgs": [
+    "UN"
+   ],
+   "population": 11600000,
+   "subregion": "Caribbean"
+  },
+  "HUN": {
+   "capital": "Budapest",
+   "continent": "Europe",
+   "iso2": "hu",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN"
+   ],
+   "population": 9600000,
+   "subregion": "Central Europe"
+  },
+  "IDN": {
+   "capital": "Jakarta",
+   "continent": "Asia",
+   "iso2": "id",
+   "orgs": [
+    "UN",
+    "G20",
+    "ASEAN"
+   ],
+   "population": 277000000,
+   "subregion": "South-Eastern Asia"
+  },
+  "IND": {
+   "capital": "New Delhi",
+   "continent": "Asia",
+   "iso2": "in",
+   "orgs": [
+    "UN",
+    "G20",
+    "BRICS",
+    "COMMONWEALTH"
+   ],
+   "population": 1425000000,
+   "subregion": "Southern Asia"
+  },
+  "IRL": {
+   "capital": "Dublin",
+   "continent": "Europe",
+   "iso2": "ie",
+   "orgs": [
+    "UN",
+    "EU",
+    "EUROZONE"
+   ],
+   "population": 5200000,
+   "subregion": "Northern Europe"
+  },
+  "IRN": {
+   "capital": "Tehran",
+   "continent": "Asia",
+   "iso2": "ir",
+   "orgs": [
+    "UN"
+   ],
+   "population": 89000000,
+   "subregion": "Southern Asia"
+  },
+  "IRQ": {
+   "capital": "Baghdad",
+   "continent": "Asia",
+   "iso2": "iq",
+   "orgs": [
+    "UN"
+   ],
+   "population": 44000000,
+   "subregion": "Western Asia"
+  },
+  "ISL": {
+   "capital": "Reykjavik",
+   "continent": "Europe",
+   "iso2": "is",
+   "orgs": [
+    "UN",
+    "NATO",
+    "SCHENGEN"
+   ],
+   "population": 390000,
+   "subregion": "Northern Europe"
+  },
+  "ISR": {
+   "capital": "Jerusalem",
+   "continent": "Asia",
+   "iso2": "il",
+   "orgs": [
+    "UN"
+   ],
+   "population": 9400000,
+   "subregion": "Western Asia"
+  },
+  "ITA": {
+   "capital": "Rome",
+   "continent": "Europe",
+   "iso2": "it",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "G7",
+    "G20",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 59000000,
+   "subregion": "Southern Europe"
+  },
+  "JAM": {
+   "capital": "Kingston",
+   "continent": "Americas",
+   "iso2": "jm",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 2800000,
+   "subregion": "Caribbean"
+  },
+  "JOR": {
+   "capital": "Amman",
+   "continent": "Asia",
+   "iso2": "jo",
+   "orgs": [
+    "UN"
+   ],
+   "population": 11300000,
+   "subregion": "Western Asia"
+  },
+  "JPN": {
+   "capital": "Tokyo",
+   "continent": "Asia",
+   "iso2": "jp",
+   "orgs": [
+    "UN",
+    "G7",
+    "G20"
+   ],
+   "population": 124000000,
+   "subregion": "Eastern Asia"
+  },
+  "KAZ": {
+   "capital": "Astana",
+   "continent": "Asia",
+   "iso2": "kz",
+   "orgs": [
+    "UN"
+   ],
+   "population": 19600000,
+   "subregion": "Central Asia"
+  },
+  "KEN": {
+   "capital": "Nairobi",
+   "continent": "Africa",
+   "iso2": "ke",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 55000000,
+   "subregion": "Eastern Africa"
+  },
+  "KGZ": {
+   "capital": "Bishkek",
+   "continent": "Asia",
+   "iso2": "kg",
+   "orgs": [
+    "UN"
+   ],
+   "population": 7000000,
+   "subregion": "Central Asia"
+  },
+  "KHM": {
+   "capital": "Phnom Penh",
+   "continent": "Asia",
+   "iso2": "kh",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 17000000,
+   "subregion": "South-Eastern Asia"
+  },
+  "KOR": {
+   "capital": "Seoul",
+   "continent": "Asia",
+   "iso2": "kr",
+   "orgs": [
+    "UN",
+    "G20"
+   ],
+   "population": 51700000,
+   "subregion": "Eastern Asia"
+  },
+  "KWT": {
+   "capital": "Kuwait City",
+   "continent": "Asia",
+   "iso2": "kw",
+   "orgs": [
+    "UN",
+    "OPEC"
+   ],
+   "population": 4300000,
+   "subregion": "Western Asia"
+  },
+  "LAO": {
+   "capital": "Vientiane",
+   "continent": "Asia",
+   "iso2": "la",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 7600000,
+   "subregion": "South-Eastern Asia"
+  },
+  "LBN": {
+   "capital": "Beirut",
+   "continent": "Asia",
+   "iso2": "lb",
+   "orgs": [
+    "UN"
+   ],
+   "population": 5400000,
+   "subregion": "Western Asia"
+  },
+  "LBR": {
+   "capital": "Monrovia",
+   "continent": "Africa",
+   "iso2": "lr",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 5300000,
+   "subregion": "Western Africa"
+  },
+  "LBY": {
+   "capital": "Tripoli",
+   "continent": "Africa",
+   "iso2": "ly",
+   "orgs": [
+    "UN",
+    "AU",
+    "OPEC"
+   ],
+   "population": 6900000,
+   "subregion": "Northern Africa"
+  },
+  "LKA": {
+   "capital": "Colombo",
+   "continent": "Asia",
+   "iso2": "lk",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 22000000,
+   "subregion": "Southern Asia"
+  },
+  "LSO": {
+   "capital": "Maseru",
+   "continent": "Africa",
+   "iso2": "ls",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 2300000,
+   "subregion": "Southern Africa"
+  },
+  "LTU": {
+   "capital": "Vilnius",
+   "continent": "Europe",
+   "iso2": "lt",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 2860000,
+   "subregion": "Northern Europe"
+  },
+  "LUX": {
+   "capital": "Luxembourg",
+   "continent": "Europe",
+   "iso2": "lu",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 660000,
+   "subregion": "Western Europe"
+  },
+  "LVA": {
+   "capital": "Riga",
+   "continent": "Europe",
+   "iso2": "lv",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 1880000,
+   "subregion": "Northern Europe"
+  },
+  "MAR": {
+   "capital": "Rabat",
+   "continent": "Africa",
+   "iso2": "ma",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 37800000,
+   "subregion": "Northern Africa"
+  },
+  "MDA": {
+   "capital": "Chișinău",
+   "continent": "Europe",
+   "iso2": "md",
+   "orgs": [
+    "UN"
+   ],
+   "population": 2500000,
+   "subregion": "Eastern Europe"
+  },
+  "MDG": {
+   "capital": "Antananarivo",
+   "continent": "Africa",
+   "iso2": "mg",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 30000000,
+   "subregion": "Eastern Africa"
+  },
+  "MEX": {
+   "capital": "Mexico City",
+   "continent": "Americas",
+   "iso2": "mx",
+   "orgs": [
+    "UN",
+    "G20"
+   ],
+   "population": 128000000,
+   "subregion": "North America"
+  },
+  "MKD": {
+   "capital": "Skopje",
+   "continent": "Europe",
+   "iso2": "mk",
+   "orgs": [
+    "UN",
+    "NATO"
+   ],
+   "population": 1830000,
+   "subregion": "Southeast Europe"
+  },
+  "MLI": {
+   "capital": "Bamako",
+   "continent": "Africa",
+   "iso2": "ml",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 22000000,
+   "subregion": "Western Africa"
+  },
+  "MMR": {
+   "capital": "Naypyidaw",
+   "continent": "Asia",
+   "iso2": "mm",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 54000000,
+   "subregion": "South-Eastern Asia"
+  },
+  "MNE": {
+   "capital": "Podgorica",
+   "continent": "Europe",
+   "iso2": "me",
+   "orgs": [
+    "UN",
+    "NATO"
+   ],
+   "population": 620000,
+   "subregion": "Southeast Europe"
+  },
+  "MNG": {
+   "capital": "Ulan Bator",
+   "continent": "Asia",
+   "iso2": "mn",
+   "orgs": [
+    "UN"
+   ],
+   "population": 3400000,
+   "subregion": "Eastern Asia"
+  },
+  "MOZ": {
+   "capital": "Maputo",
+   "continent": "Africa",
+   "iso2": "mz",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 33000000,
+   "subregion": "Eastern Africa"
+  },
+  "MRT": {
+   "capital": "Nouakchott",
+   "continent": "Africa",
+   "iso2": "mr",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 4900000,
+   "subregion": "Western Africa"
+  },
+  "MWI": {
+   "capital": "Lilongwe",
+   "continent": "Africa",
+   "iso2": "mw",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 20400000,
+   "subregion": "Eastern Africa"
+  },
+  "MYS": {
+   "capital": "Kuala Lumpur",
+   "continent": "Asia",
+   "iso2": "my",
+   "orgs": [
+    "UN",
+    "ASEAN",
+    "COMMONWEALTH"
+   ],
+   "population": 34000000,
+   "subregion": "South-Eastern Asia"
+  },
+  "NAM": {
+   "capital": "Windhoek",
+   "continent": "Africa",
+   "iso2": "na",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 2600000,
+   "subregion": "Southern Africa"
+  },
+  "NCL": {
+   "capital": "Nouméa",
+   "continent": "Oceania",
+   "iso2": "nc",
+   "orgs": [],
+   "population": 270000,
+   "subregion": "Melanesia"
+  },
+  "NER": {
+   "capital": "Niamey",
+   "continent": "Africa",
+   "iso2": "ne",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 27000000,
+   "subregion": "Western Africa"
+  },
+  "NGA": {
+   "capital": "Abuja",
+   "continent": "Africa",
+   "iso2": "ng",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 223000000,
+   "subregion": "Western Africa"
+  },
+  "NIC": {
+   "capital": "Managua",
+   "continent": "Americas",
+   "iso2": "ni",
+   "orgs": [
+    "UN"
+   ],
+   "population": 6900000,
+   "subregion": "Central America"
+  },
+  "NLD": {
+   "capital": "Amsterdam",
+   "continent": "Europe",
+   "iso2": "nl",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 17900000,
+   "subregion": "Western Europe"
+  },
+  "NOR": {
+   "capital": "Oslo",
+   "continent": "Europe",
+   "iso2": "no",
+   "orgs": [
+    "UN",
+    "NATO",
+    "SCHENGEN"
+   ],
+   "population": 5500000,
+   "subregion": "Northern Europe"
+  },
+  "NPL": {
+   "capital": "Kathmandu",
+   "continent": "Asia",
+   "iso2": "np",
+   "orgs": [
+    "UN"
+   ],
+   "population": 30000000,
+   "subregion": "Southern Asia"
+  },
+  "NZL": {
+   "capital": "Wellington",
+   "continent": "Oceania",
+   "iso2": "nz",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 5200000,
+   "subregion": "Australia and New Zealand"
+  },
+  "OMN": {
+   "capital": "Muscat",
+   "continent": "Asia",
+   "iso2": "om",
+   "orgs": [
+    "UN"
+   ],
+   "population": 4600000,
+   "subregion": "Western Asia"
+  },
+  "PAK": {
+   "capital": "Islamabad",
+   "continent": "Asia",
+   "iso2": "pk",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 240000000,
+   "subregion": "Southern Asia"
+  },
+  "PAN": {
+   "capital": "Panama City",
+   "continent": "Americas",
+   "iso2": "pa",
+   "orgs": [
+    "UN"
+   ],
+   "population": 4400000,
+   "subregion": "Central America"
+  },
+  "PER": {
+   "capital": "Lima",
+   "continent": "Americas",
+   "iso2": "pe",
+   "orgs": [
+    "UN"
+   ],
+   "population": 34000000,
+   "subregion": "South America"
+  },
+  "PHL": {
+   "capital": "Manila",
+   "continent": "Asia",
+   "iso2": "ph",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 117000000,
+   "subregion": "South-Eastern Asia"
+  },
+  "PNG": {
+   "capital": "Port Moresby",
+   "continent": "Oceania",
+   "iso2": "pg",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 10300000,
+   "subregion": "Melanesia"
+  },
+  "POL": {
+   "capital": "Warsaw",
+   "continent": "Europe",
+   "iso2": "pl",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN"
+   ],
+   "population": 37600000,
+   "subregion": "Central Europe"
+  },
+  "PRI": {
+   "capital": "San Juan",
+   "continent": "Americas",
+   "iso2": "pr",
+   "orgs": [],
+   "population": 3200000,
+   "subregion": "Caribbean"
+  },
+  "PRK": {
+   "capital": "Pyongyang",
+   "continent": "Asia",
+   "iso2": "kp",
+   "orgs": [
+    "UN"
+   ],
+   "population": 26000000,
+   "subregion": "Eastern Asia"
+  },
+  "PRT": {
+   "capital": "Lisbon",
+   "continent": "Europe",
+   "iso2": "pt",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 10500000,
+   "subregion": "Southern Europe"
+  },
+  "PRY": {
+   "capital": "Asunción",
+   "continent": "Americas",
+   "iso2": "py",
+   "orgs": [
+    "UN"
+   ],
+   "population": 6900000,
+   "subregion": "South America"
+  },
+  "PSE": {
+   "capital": "Ramallah",
+   "continent": "Asia",
+   "iso2": "ps",
+   "orgs": [],
+   "population": 5400000,
+   "subregion": "Western Asia"
+  },
+  "QAT": {
+   "capital": "Doha",
+   "continent": "Asia",
+   "iso2": "qa",
+   "orgs": [
+    "UN"
+   ],
+   "population": 2700000,
+   "subregion": "Western Asia"
+  },
+  "ROU": {
+   "capital": "Bucharest",
+   "continent": "Europe",
+   "iso2": "ro",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN"
+   ],
+   "population": 19000000,
+   "subregion": "Southeast Europe"
+  },
+  "RUS": {
+   "capital": "Moscow",
+   "continent": "Europe",
+   "iso2": "ru",
+   "orgs": [
+    "UN",
+    "G20",
+    "BRICS"
+   ],
+   "population": 144000000,
+   "subregion": "Eastern Europe"
+  },
+  "RWA": {
+   "capital": "Kigali",
+   "continent": "Africa",
+   "iso2": "rw",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 13900000,
+   "subregion": "Eastern Africa"
+  },
+  "SAU": {
+   "capital": "Riyadh",
+   "continent": "Asia",
+   "iso2": "sa",
+   "orgs": [
+    "UN",
+    "G20",
+    "OPEC"
+   ],
+   "population": 36000000,
+   "subregion": "Western Asia"
+  },
+  "SDN": {
+   "capital": "Khartoum",
+   "continent": "Africa",
+   "iso2": "sd",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 48000000,
+   "subregion": "Northern Africa"
+  },
+  "SEN": {
+   "capital": "Dakar",
+   "continent": "Africa",
+   "iso2": "sn",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 18000000,
+   "subregion": "Western Africa"
+  },
+  "SLB": {
+   "capital": "Honiara",
+   "continent": "Oceania",
+   "iso2": "sb",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 740000,
+   "subregion": "Melanesia"
+  },
+  "SLE": {
+   "capital": "Freetown",
+   "continent": "Africa",
+   "iso2": "sl",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 8600000,
+   "subregion": "Western Africa"
+  },
+  "SLV": {
+   "capital": "San Salvador",
+   "continent": "Americas",
+   "iso2": "sv",
+   "orgs": [
+    "UN"
+   ],
+   "population": 6300000,
+   "subregion": "Central America"
+  },
+  "SOM": {
+   "capital": "Mogadishu",
+   "continent": "Africa",
+   "iso2": "so",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 18000000,
+   "subregion": "Eastern Africa"
+  },
+  "SRB": {
+   "capital": "Belgrade",
+   "continent": "Europe",
+   "iso2": "rs",
+   "orgs": [
+    "UN"
+   ],
+   "population": 6600000,
+   "subregion": "Southeast Europe"
+  },
+  "SSD": {
+   "capital": "Juba",
+   "continent": "Africa",
+   "iso2": "ss",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 11000000,
+   "subregion": "Middle Africa"
+  },
+  "SUR": {
+   "capital": "Paramaribo",
+   "continent": "Americas",
+   "iso2": "sr",
+   "orgs": [
+    "UN"
+   ],
+   "population": 600000,
+   "subregion": "South America"
+  },
+  "SVK": {
+   "capital": "Bratislava",
+   "continent": "Europe",
+   "iso2": "sk",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 5400000,
+   "subregion": "Central Europe"
+  },
+  "SVN": {
+   "capital": "Ljubljana",
+   "continent": "Europe",
+   "iso2": "si",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN",
+    "EUROZONE"
+   ],
+   "population": 2100000,
+   "subregion": "Central Europe"
+  },
+  "SWE": {
+   "capital": "Stockholm",
+   "continent": "Europe",
+   "iso2": "se",
+   "orgs": [
+    "UN",
+    "EU",
+    "NATO",
+    "SCHENGEN"
+   ],
+   "population": 10600000,
+   "subregion": "Northern Europe"
+  },
+  "SWZ": {
+   "capital": "Lobamba",
+   "continent": "Africa",
+   "iso2": "sz",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 1200000,
+   "subregion": "Southern Africa"
+  },
+  "SYR": {
+   "capital": "Damascus",
+   "continent": "Asia",
+   "iso2": "sy",
+   "orgs": [
+    "UN"
+   ],
+   "population": 23000000,
+   "subregion": "Western Asia"
+  },
+  "TCD": {
+   "capital": "N'Djamena",
+   "continent": "Africa",
+   "iso2": "td",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 18300000,
+   "subregion": "Middle Africa"
+  },
+  "TGO": {
+   "capital": "Lomé",
+   "continent": "Africa",
+   "iso2": "tg",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 8800000,
+   "subregion": "Western Africa"
+  },
+  "THA": {
+   "capital": "Bangkok",
+   "continent": "Asia",
+   "iso2": "th",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 71800000,
+   "subregion": "South-Eastern Asia"
+  },
+  "TJK": {
+   "capital": "Dushanbe",
+   "continent": "Asia",
+   "iso2": "tj",
+   "orgs": [
+    "UN"
+   ],
+   "population": 10100000,
+   "subregion": "Central Asia"
+  },
+  "TKM": {
+   "capital": "Ashgabat",
+   "continent": "Asia",
+   "iso2": "tm",
+   "orgs": [
+    "UN"
+   ],
+   "population": 6300000,
+   "subregion": "Central Asia"
+  },
+  "TLS": {
+   "capital": "Dili",
+   "continent": "Asia",
+   "iso2": "tl",
+   "orgs": [
+    "UN"
+   ],
+   "population": 1360000,
+   "subregion": "South-Eastern Asia"
+  },
+  "TTO": {
+   "capital": "Port of Spain",
+   "continent": "Americas",
+   "iso2": "tt",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 1500000,
+   "subregion": "Caribbean"
+  },
+  "TUN": {
+   "capital": "Tunis",
+   "continent": "Africa",
+   "iso2": "tn",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 12300000,
+   "subregion": "Northern Africa"
+  },
+  "TUR": {
+   "capital": "Ankara",
+   "continent": "Asia",
+   "iso2": "tr",
+   "orgs": [
+    "UN",
+    "NATO",
+    "G20"
+   ],
+   "population": 85600000,
+   "subregion": "Western Asia"
+  },
+  "TWN": {
+   "capital": "Taipei",
+   "continent": "Asia",
+   "iso2": "tw",
+   "orgs": [],
+   "population": 23400000,
+   "subregion": "Eastern Asia"
+  },
+  "TZA": {
+   "capital": "Dodoma",
+   "continent": "Africa",
+   "iso2": "tz",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 67000000,
+   "subregion": "Eastern Africa"
+  },
+  "UGA": {
+   "capital": "Kampala",
+   "continent": "Africa",
+   "iso2": "ug",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 48000000,
+   "subregion": "Eastern Africa"
+  },
+  "UKR": {
+   "capital": "Kyiv",
+   "continent": "Europe",
+   "iso2": "ua",
+   "orgs": [
+    "UN"
+   ],
+   "population": 36000000,
+   "subregion": "Eastern Europe"
+  },
+  "UNK": {
+   "capital": "Pristina",
+   "continent": "Europe",
+   "iso2": "xk",
+   "orgs": [],
+   "population": 1600000,
+   "subregion": "Southeast Europe"
+  },
+  "URY": {
+   "capital": "Montevideo",
+   "continent": "Americas",
+   "iso2": "uy",
+   "orgs": [
+    "UN"
+   ],
+   "population": 3400000,
+   "subregion": "South America"
+  },
+  "USA": {
+   "capital": "Washington D.C.",
+   "continent": "Americas",
+   "iso2": "us",
+   "orgs": [
+    "UN",
+    "G7",
+    "G20",
+    "NATO"
+   ],
+   "population": 335000000,
+   "subregion": "North America"
+  },
+  "UZB": {
+   "capital": "Tashkent",
+   "continent": "Asia",
+   "iso2": "uz",
+   "orgs": [
+    "UN"
+   ],
+   "population": 35600000,
+   "subregion": "Central Asia"
+  },
+  "VEN": {
+   "capital": "Caracas",
+   "continent": "Americas",
+   "iso2": "ve",
+   "orgs": [
+    "UN"
+   ],
+   "population": 28300000,
+   "subregion": "South America"
+  },
+  "VNM": {
+   "capital": "Hanoi",
+   "continent": "Asia",
+   "iso2": "vn",
+   "orgs": [
+    "UN",
+    "ASEAN"
+   ],
+   "population": 99000000,
+   "subregion": "South-Eastern Asia"
+  },
+  "VUT": {
+   "capital": "Port Vila",
+   "continent": "Oceania",
+   "iso2": "vu",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 330000,
+   "subregion": "Melanesia"
+  },
+  "YEM": {
+   "capital": "Sana'a",
+   "continent": "Asia",
+   "iso2": "ye",
+   "orgs": [
+    "UN"
+   ],
+   "population": 34000000,
+   "subregion": "Western Asia"
+  },
+  "ZAF": {
+   "capital": "Pretoria",
+   "continent": "Africa",
+   "iso2": "za",
+   "orgs": [
+    "UN",
+    "AU",
+    "G20",
+    "BRICS",
+    "COMMONWEALTH"
+   ],
+   "population": 60000000,
+   "subregion": "Southern Africa"
+  },
+  "ZMB": {
+   "capital": "Lusaka",
+   "continent": "Africa",
+   "iso2": "zm",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 20600000,
+   "subregion": "Eastern Africa"
+  },
+  "ZWE": {
+   "capital": "Harare",
+   "continent": "Africa",
+   "iso2": "zw",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 16300000,
+   "subregion": "Eastern Africa"
+  }
+ },
+ "note": "Population figures are rounded, approximate estimates. Organization membership is hand-curated and may drift from real-world changes over time."
+}

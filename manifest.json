@@ -1,13 +1,15 @@
 {
-  "name": "GeoNarrow — find the country",
-  "short_name": "GeoNarrow",
-  "description": "A geography narrowing-down game: each round the world splits into two regions, pick the one holding the target country.",
+  "id": "/",
+  "name": "GeoShrink — learn geography by playing",
+  "short_name": "GeoShrink",
+  "description": "A geography learning game with nine modes — narrow the world down to a target country, explore outward from a home base in Fog of War, match flags and capitals, travel country-by-country in Expedition, and more — with levels, XP, and difficulty tiers.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#f9f9f7",
   "theme_color": "#2a78d6",
+  "categories": ["education", "games", "geography"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

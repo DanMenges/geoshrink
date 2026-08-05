@@ -8,13 +8,20 @@
   --border:         rgba(11,11,11,0.10);
   --group-a:        #2a78d6;   /* series slot 1: blue */
   --group-b:        #eb6834;   /* series slot 2: orange */
+  --guessable:      #4a3aa7;   /* series slot 7: violet */
   --eliminated-fill:#e1e0d9;
   --eliminated-stroke: #c3c2b7;
   --ocean:          #dfeaf9;
   --graticule:      #c7d6ea;
   --good:           #0ca30c;
   --critical:       #d03b3b;
-  --shadow: 0 1px 2px rgba(11,11,11,0.06), 0 8px 24px rgba(11,11,11,0.08);
+  --shadow: 0 1px 2px rgba(11,11,11,0.06), 0 8px 24px rgba(11,11,11,0.10);
+  /* Atlas mode continent categories — slots 1-5 of the same validated set */
+  --cont-1: #2a78d6;   /* Africa: blue */
+  --cont-2: #eb6834;   /* Americas: orange */
+  --cont-3: #1baf7a;   /* Asia: aqua */
+  --cont-4: #eda100;   /* Europe: yellow */
+  --cont-5: #e87ba4;   /* Oceania: magenta */
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) .viz-root {
@@ -27,13 +34,19 @@
     --border:         rgba(255,255,255,0.10);
     --group-a:        #3987e5;
     --group-b:        #d95926;
+    --guessable:      #9085e9;
     --eliminated-fill:#2c2c2a;
     --eliminated-stroke: #383835;
     --ocean:          #14232f;
     --graticule:      #223244;
     --good:           #0ca30c;
     --critical:       #e66767;
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.5);
+    --cont-1: #3987e5;
+    --cont-2: #d95926;
+    --cont-3: #199e70;
+    --cont-4: #c98500;
+    --cont-5: #d55181;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -46,83 +59,289 @@
   --border:         rgba(255,255,255,0.10);
   --group-a:        #3987e5;
   --group-b:        #d95926;
+  --guessable:      #9085e9;
   --eliminated-fill:#2c2c2a;
   --eliminated-stroke: #383835;
   --ocean:          #14232f;
   --graticule:      #223244;
   --good:           #0ca30c;
   --critical:       #e66767;
-  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+  --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.5);
+  --cont-1: #3987e5;
+  --cont-2: #d95926;
+  --cont-3: #199e70;
+  --cont-4: #c98500;
+  --cont-5: #d55181;
 }
 
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--page-plane);
   color: var(--text-primary);
 }
-.viz-root {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100%;
-  padding: 20px 14px 40px;
+.viz-root { position: fixed; inset: 0; }
+
+/* the map always fills the entire page ------------------------------- */
+.board {
+  position: absolute;
+  inset: 0;
+  background: var(--ocean);
+  overflow: hidden;
+}
+svg#map { display: block; width: 100%; height: 100%; }
+.pop-terrain-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 400ms ease; }
+.pop-terrain-canvas.show { opacity: 1; }
+/* A slow diagonal light sweep across the terrain — cheap (pure CSS, no
+   recompute), tasteful motion so the population view feels alive rather
+   than a static render. */
+.pop-terrain-sheen {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: overlay;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.35) 50%, transparent 65%);
+  background-size: 300% 300%;
+  background-position: 120% -20%;
+  transition: opacity 500ms ease;
+}
+.pop-terrain-sheen.show { opacity: 1; animation: popSheenSweep 9s ease-in-out infinite; }
+@keyframes popSheenSweep {
+  0% { background-position: 120% -20%; }
+  50% { background-position: -20% 120%; }
+  100% { background-position: 120% -20%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop-terrain-sheen.show { animation: none; }
+}
+.graticule { fill: none; stroke: var(--graticule); stroke-width: 0.6; }
+.sphere-outline { fill: none; stroke: var(--graticule); stroke-width: 1; }
+
+.country { stroke: var(--surface-1); stroke-width: 0.5; cursor: default; transition: fill 260ms ease, opacity 300ms ease; }
+.country.eliminated { fill: var(--eliminated-fill); stroke: var(--eliminated-stroke); opacity: 0.6; cursor: default; }
+.country.cont-1 { fill: var(--cont-1); }
+.country.cont-2 { fill: var(--cont-2); }
+.country.cont-3 { fill: var(--cont-3); }
+.country.cont-4 { fill: var(--cont-4); }
+.country.cont-5 { fill: var(--cont-5); }
+.country.cont-other { fill: var(--eliminated-fill); stroke: var(--eliminated-stroke); }
+.country-label {
+  pointer-events: none;
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  user-select: none;
+  fill: rgba(0,0,0,0.78);
+  paint-order: stroke;
+  stroke: rgba(255,255,255,0.9);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .country-label { fill: rgba(255,255,255,0.88); stroke: rgba(0,0,0,0.65); }
+}
+:root[data-theme="dark"] .country-label { fill: rgba(255,255,255,0.88); stroke: rgba(0,0,0,0.65); }
+
+.country.group-a { fill: var(--group-a); cursor: pointer; }
+.country.group-b { fill: var(--group-b); cursor: pointer; }
+.country.guessable { fill: var(--guessable); cursor: pointer; }
+.country.available { fill: var(--eliminated-fill); stroke: var(--eliminated-stroke); cursor: pointer; opacity: 1; }
+
+/* Map styles — layered on top of the flat group-a/b fill above.
+   .map-style-flat (Classic, free) intentionally has no rules here, so it
+   stays exactly the original solid-color look. */
+
+/* Coral Reef (free): a gradient sheen + soft glow. */
+.map-style-glow .country.group-a { fill: url(#grad-group-a); filter: drop-shadow(0 0 2.5px var(--group-a)); }
+.map-style-glow .country.group-b { fill: url(#grad-group-b); filter: drop-shadow(0 0 2.5px var(--group-b)); }
+
+/* Neon Grid (free): dark backdrop, neon double-glow, slow pulse. */
+.map-style-scifi .country { stroke: color-mix(in srgb, var(--graticule) 80%, white); stroke-width: 0.5; }
+.map-style-scifi .country.group-a {
+  fill: url(#grad-group-a);
+  stroke: color-mix(in srgb, var(--group-a) 65%, white);
+  stroke-width: 0.9;
+  filter: drop-shadow(0 0 3px var(--group-a)) drop-shadow(0 0 8px var(--group-a));
+  animation: scifiPulse 3.2s ease-in-out infinite;
+}
+.map-style-scifi .country.group-b {
+  fill: url(#grad-group-b);
+  stroke: color-mix(in srgb, var(--group-b) 65%, white);
+  stroke-width: 0.9;
+  filter: drop-shadow(0 0 3px var(--group-b)) drop-shadow(0 0 8px var(--group-b));
+  animation: scifiPulse 3.2s ease-in-out infinite;
+  animation-delay: 1.6s;
+}
+@keyframes scifiPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-style-scifi .country.group-a, .map-style-scifi .country.group-b { animation: none; }
 }
 
-/* header ------------------------------------------------------------ */
-header {
-  width: 100%;
-  max-width: 1000px;
+/* Dinosaur (150): a warm gradient sheen + soft amber glow, five real
+   species drawn at the region each is famously associated with (map.js's
+   .dino-illustrations layer — pointer-events:none, so they never affect
+   click targets). The sepia ocean/graticule colors come from the theme's
+   ocean/graticule override in theme.js. */
+.map-style-dino .dino-illustrations { opacity: 0.8; }
+.map-style-dino .country.group-a { fill: url(#grad-group-a); filter: drop-shadow(0 0 2.5px var(--group-a)); }
+.map-style-dino .country.group-b { fill: url(#grad-group-b); filter: drop-shadow(0 0 2.5px var(--group-b)); }
+.map-style-dino .country { stroke: var(--graticule); }
+.dino-illustrations { pointer-events: none; opacity: 0; transition: opacity 400ms ease; }
+/* Fossil-skeleton style: a thick curved spine + angular skull reads as
+   "dinosaur" from just a few strokes — far more forgiving than trying to
+   fill a whole anatomical silhouette. .dino-body is a wide gradient-shaded
+   stroke traced along the same spine curve, underneath the bone line, to
+   suggest a rounded 3D torso without the shapeless-blob risk a separate
+   filled silhouette had. Legs get a slow walk-cycle swing for some life. */
+.dino-figure { fill: #2b2013; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+.dino-figure .dino-body { fill: none; stroke: url(#dino-body-grad); stroke-width: 15; stroke-linecap: round; opacity: 0.65; }
+.dino-figure .dino-bone { fill: none; stroke: #2b2013; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.dino-figure .dino-thin { fill: none; stroke: #2b2013; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.dino-figure .dino-eye { fill: #f4e9d0; }
+.dino-figure .dino-skull { fill: #2b2013; }
+.dino-figure .dino-leg1, .dino-figure .dino-leg2 {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: dinoWalk 1.8s ease-in-out infinite;
+}
+.dino-figure .dino-leg2 { animation-direction: reverse; }
+@keyframes dinoWalk {
+  0%, 100% { transform: rotate(-7deg); }
+  50% { transform: rotate(7deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dino-figure .dino-leg1, .dino-figure .dino-leg2 { animation: none; }
+}
+
+/* Population (300): each group's hue ramps from pale to fully saturated by
+   that country's (log-scaled) population, via the --pop custom property
+   map.js stamps on every path. World Atlas goes further and replaces its
+   whole view with a real continuous Gaussian-density terrain (map.js's
+   canvas-rendered #pop-terrain-canvas — hillshaded, tallest and reddest
+   where population is densest) since "compare the whole world at once" is
+   exactly what that mode is for. */
+.map-style-population .country.group-a { fill: color-mix(in srgb, var(--group-a) calc(20% + var(--pop, 0.5) * 75%), white); }
+.map-style-population .country.group-b { fill: color-mix(in srgb, var(--group-b) calc(20% + var(--pop, 0.5) * 75%), white); }
+
+/* World Atlas's dedicated view when the Population theme is equipped: every
+   country fades to a muted dark "canvas" so the terrain reads as the real
+   subject. Not nested under .map-style-population so it renders the same
+   regardless of which theme class is active elsewhere. */
+.country.pop-base { fill: #131a2e; stroke: #2a2f52; cursor: default; }
+.pop-legend { display: flex; align-items: center; gap: 8px; }
+.pop-scale-bar { display: inline-block; width: 140px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #4a6088, #ffd166, #ff8c42, #e63946); vertical-align: -1px; }
+.country.fog-known { fill: var(--group-a); opacity: 0.55; cursor: default; }
+.country.fog-frontier { fill: var(--guessable); cursor: pointer; }
+.country.exp-done { fill: var(--group-a); opacity: 0.55; cursor: default; }
+.country.flash-good { fill: var(--good) !important; }
+.country.flash-bad { fill: var(--critical) !important; }
+.country.group-a:hover, .country.group-b:hover, .country.guessable:hover, .country.fog-frontier:hover { filter: brightness(1.14); }
+
+.legend .known .swatch { background: var(--group-a); opacity: 0.55; }
+.legend .frontier .swatch { background: var(--guessable); }
+
+.shake { animation: shake 320ms ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+/* HUD: overlaid chips, always opaque for guaranteed contrast ------------ */
+.hud {
+  position: absolute;
+  z-index: 4;
   display: flex;
   align-items: center;
+  gap: 8px;
+  pointer-events: none; /* let clicks pass through the gaps to the map */
+}
+.hud > * { pointer-events: auto; }
+
+.hud-top {
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
   flex-wrap: wrap;
 }
-.brand { display: flex; align-items: center; gap: 8px; }
-.brand svg { width: 26px; height: 26px; flex: none; }
-h1 {
-  font-size: 19px;
-  margin: 0;
-  letter-spacing: -0.01em;
+.brand-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 7px 12px;
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
 }
-.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.brand-chip svg { width: 21px; height: 21px; flex: none; }
+
+.wallet-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  color: #c9902a;
+  cursor: pointer;
+}
+.wallet-chip:hover { filter: brightness(0.97); }
+@media (prefers-color-scheme: dark) { .wallet-chip:hover { filter: brightness(1.2); } }
+:root[data-theme="dark"] .wallet-chip:hover { filter: brightness(1.2); }
+.wallet-chip svg { flex: none; }
+
+.stats { display: flex; gap: 7px; flex-wrap: wrap; }
 .stat-chip {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5px 12px;
+  padding: 5px 11px;
   border-radius: 8px;
   background: var(--surface-1);
   border: 1px solid var(--border);
-  min-width: 64px;
+  box-shadow: var(--shadow);
+  min-width: 56px;
 }
-.stat-chip .v { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.stat-chip .l { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-chip .v { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+.stat-chip .l { font-size: 9.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-chip.stat-points .v { color: var(--guessable); }
 
-/* mission banner ------------------------------------------------------ */
-.mission {
+.hud-mission {
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(92vw, 560px);
   width: 100%;
-  max-width: 1000px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 16px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
+  border-radius: 12px;
+  padding: 10px 18px;
+  box-shadow: var(--shadow);
 }
-.mission .find { font-size: 15px; color: var(--text-secondary); }
-.mission .find b { color: var(--text-primary); font-weight: 700; font-size: 17px; }
+.find { font-size: 15px; color: var(--text-secondary); text-align: center; }
+.find b { color: var(--text-primary); font-weight: 700; font-size: 18px; }
 .progress-track {
-  flex: 1 1 160px;
-  min-width: 120px;
   height: 6px;
   border-radius: 999px;
   background: var(--eliminated-fill);
@@ -136,95 +355,59 @@ h1 {
   transition: width 500ms ease;
 }
 
-/* board --------------------------------------------------------------- */
-.board {
-  width: 100%;
-  max-width: 1000px;
+.hud-bottom {
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.hud-bottom > * {
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  position: relative;
+  border-radius: 10px;
   box-shadow: var(--shadow);
 }
-svg#map { display: block; width: 100%; height: auto; background: var(--ocean); cursor: default; }
-.graticule { fill: none; stroke: var(--graticule); stroke-width: 0.6; }
-.sphere-outline { fill: none; stroke: var(--graticule); stroke-width: 1; }
-
-.country { stroke: var(--surface-1); stroke-width: 0.5; cursor: default; transition: fill 260ms ease, opacity 300ms ease; }
-.country.eliminated { fill: var(--eliminated-fill); stroke: var(--eliminated-stroke); opacity: 0.6; cursor: default; }
-.country.group-a { fill: var(--group-a); cursor: pointer; }
-.country.group-b { fill: var(--group-b); cursor: pointer; }
-.country.flash-good { fill: var(--good) !important; }
-.country.flash-bad { fill: var(--critical) !important; }
-.country.group-a:hover, .country.group-b:hover { filter: brightness(1.14); }
-
-.shake { animation: shake 320ms ease; }
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
-}
-
-/* tooltip --------------------------------------------------------------- */
-.tooltip {
-  position: absolute;
-  pointer-events: none;
-  background: var(--text-primary);
-  color: var(--surface-1);
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 5px 9px;
-  border-radius: 6px;
-  transform: translate(-50%, calc(-100% - 10px));
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 120ms ease;
-  z-index: 5;
-  box-shadow: var(--shadow);
-}
-.tooltip.show { opacity: 1; }
-.tooltip::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--text-primary);
-}
-
 .legend {
   display: flex;
-  gap: 18px;
-  padding: 10px 16px;
-  font-size: 12.5px;
+  gap: 16px;
+  padding: 8px 14px;
+  font-size: 12px;
   color: var(--text-secondary);
-  border-top: 1px solid var(--border);
   flex-wrap: wrap;
 }
-.legend .swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 .legend .a .swatch { background: var(--group-a); }
 .legend .b .swatch { background: var(--group-b); }
+.legend .g .swatch { background: var(--guessable); }
 .legend .elim .swatch { background: var(--eliminated-fill); border: 1px solid var(--eliminated-stroke); }
-.legend .spacer { flex: 1; }
-.legend .kiosk-btn {
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
+
+.hint { padding: 6px 14px; font-size: 12.5px; color: var(--text-muted); }
+
+.actions {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0;
+  gap: 10px;
+  padding: 8px 12px;
+  flex-wrap: wrap;
 }
-.legend .kiosk-btn svg { width: 14px; height: 14px; }
-.legend .kiosk-btn:hover { color: var(--text-primary); }
+.mode-panel { display: contents; }
+
+.flag-img {
+  height: 34px;
+  width: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: block;
+  background: var(--surface-1);
+}
+
+.choice-btn { min-width: 84px; justify-content: center; }
+.choice-btn:disabled { cursor: default; opacity: 0.7; }
+.choice-btn.choice-correct { background: var(--good); border-color: var(--good); color: #ffffff; }
+.choice-btn.choice-wrong { background: var(--critical); border-color: var(--critical); color: #ffffff; }
 
 .switch-label {
   display: flex;
@@ -269,39 +452,65 @@ svg#map { display: block; width: 100%; height: auto; background: var(--ocean); c
 .switch input:checked ~ .switch-track { background: var(--group-a); border-color: var(--group-a); }
 .switch input:checked ~ .switch-track .switch-thumb { transform: translateX(13px); }
 
-/* controls ------------------------------------------------------------- */
-.controls {
-  width: 100%;
-  max-width: 1000px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 14px;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-button.newgame {
+button.hud-btn {
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  padding: 9px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--surface-1);
+  background: var(--page-plane);
   color: var(--text-primary);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+button.hud-btn:hover { filter: brightness(0.97); }
+@media (prefers-color-scheme: dark) { button.hud-btn:hover { filter: brightness(1.2); } }
+:root[data-theme="dark"] button.hud-btn:hover { filter: brightness(1.2); }
+button.hud-btn.icon-only { padding: 8px; }
+button.hud-btn:disabled { cursor: default; opacity: 0.5; }
+button.hud-btn#guess-btn.active {
+  background: var(--guessable);
+  border-color: var(--guessable);
+  color: #ffffff;
+}
+button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(--group-a); }
+
+/* tooltip --------------------------------------------------------------- */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--text-primary);
+  color: var(--surface-1);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 6px;
+  transform: translate(-50%, calc(-100% - 10px));
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  z-index: 5;
   box-shadow: var(--shadow);
 }
-button.newgame:hover { filter: brightness(0.97); }
-@media (prefers-color-scheme: dark) { button.newgame:hover { filter: brightness(1.15); } }
-:root[data-theme="dark"] button.newgame:hover { filter: brightness(1.15); }
-
-.hint { font-size: 13px; color: var(--text-muted); }
+.tooltip.show { opacity: 1; }
+.tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text-primary);
+}
 
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: max(20px, env(safe-area-inset-bottom));
   transform: translateX(-50%) translateY(12px);
   background: var(--text-primary);
   color: var(--surface-1);
@@ -321,7 +530,11 @@ button.newgame:hover { filter: brightness(0.97); }
 .overlay {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  /* Below .hud's z-index (4) on purpose: the top/bottom HUD bars (Home,
+     New Game, Fullscreen, mode panel) must stay clickable while a win
+     screen is showing, not get trapped behind it. */
+  z-index: 3;
+  background: color-mix(in srgb, var(--surface-1) 90%, transparent);
   display: none;
   align-items: center;
   justify-content: center;
@@ -336,58 +549,272 @@ button.newgame:hover { filter: brightness(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 .overlay .medal { width: 46px; height: 46px; color: var(--good); }
-.overlay .big { font-size: 28px; font-weight: 700; }
+.overlay .medal .medal-x { display: none; }
+.overlay.failed .medal { color: var(--critical); }
+.overlay.failed .medal .medal-check { display: none; }
+.overlay.failed .medal .medal-x { display: inline; }
+.overlay .big { font-size: 30px; font-weight: 700; color: var(--text-primary); }
 .overlay .sub { font-size: 15px; color: var(--text-secondary); }
-.overlay button.newgame { margin-top: 6px; }
+.win-bonus { font-size: 13px; font-weight: 700; color: #c9902a; }
+.overlay button.hud-btn { margin-top: 6px; background: var(--surface-1); }
 
-/* kiosk / wall mode -------------------------------------------------------- */
-.viz-root.kiosk { padding: 0; max-width: none; }
-.viz-root.kiosk header,
-.viz-root.kiosk .mission,
-.viz-root.kiosk .controls,
-.viz-root.kiosk .legend { display: none; }
-.viz-root.kiosk .board {
-  max-width: none;
-  width: 100vw;
-  height: 100vh;
-  border-radius: 0;
-  border: none;
+/* shop overlay ------------------------------------------------------------ */
+.shop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: color-mix(in srgb, var(--surface-1) 82%, transparent);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.shop-overlay.show { display: flex; animation: overlayIn 320ms ease; }
+.shop-card {
+  width: min(92vw, 480px);
+  max-height: min(86vh, 640px);
+  overflow-y: auto;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.shop-header { display: flex; align-items: center; gap: 10px; }
+.shop-header h2 { flex: 1; margin: 0; font-size: 18px; font-weight: 800; color: var(--text-primary); }
+.shop-balance { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; color: #c9902a; }
+.shop-section h3 { margin: 0 0 4px; font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.shop-hint { margin: 0 0 10px; font-size: 11.5px; color: var(--text-muted); }
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 10px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  text-align: center;
+}
+.theme-card.equipped { border-color: var(--group-a); }
+.theme-swatch { display: flex; gap: 3px; }
+.theme-swatch span { width: 16px; height: 16px; border-radius: 50%; display: block; box-shadow: 0 0 0 1px var(--border) inset; }
+/* color is set inline per swatch (each theme's own hex, via shop.js) so the
+   glow always matches that swatch's actual fill, not whichever theme is
+   currently equipped app-wide. */
+.theme-swatch-glow span, .theme-swatch-dino span { box-shadow: 0 0 0 1px var(--border) inset, 0 0 5px 1px color-mix(in srgb, currentColor 60%, transparent); }
+.theme-swatch-scifi span { box-shadow: 0 0 0 1px var(--border) inset, 0 0 6px 2px currentColor; animation: scifiPulse 3.2s ease-in-out infinite; }
+.theme-swatch-scifi span:last-child { animation-delay: 1.6s; }
+.theme-swatch-population span { box-shadow: 0 0 0 1px var(--border) inset, 0 1px 3px 0 color-mix(in srgb, currentColor 70%, transparent); }
+.theme-label { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+.shop-equipped { font-size: 11px; font-weight: 700; color: var(--good); }
+.shop-btn { font-size: 12px; padding: 6px 12px; }
+.shop-shield {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
 }
-.viz-root.kiosk svg#map { height: 100vh; }
-.viz-root.kiosk .kiosk-banner {
-  display: block;
+.shield-count { font-size: 13px; color: var(--text-secondary); }
+.shield-count b { color: var(--text-primary); }
+
+/* home screen ------------------------------------------------------------- */
+.board {
+  transition: opacity 260ms ease;
+}
+.board.hidden { opacity: 0; pointer-events: none; }
+
+.home-screen {
   position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 28px;
+  inset: 0;
+  background: var(--page-plane);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 2;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+.home-screen.show { opacity: 1; visibility: visible; pointer-events: auto; }
+
+/* compact top bar: a slim branded strip, not a scroll-costing hero section.
+   The small circular "mini-globe" frame keeps a dark backdrop just around
+   the spinning globe (so it still reads clearly at small size) without
+   spending the whole screen's height on it. */
+.home-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px clamp(16px, 3vw, 48px);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+.home-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.home-topbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mini-globe-frame {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 35% 30%, #1c3a5e 0%, #060f1c 85%);
+  box-shadow: 0 1px 3px rgba(11, 11, 11, 0.25);
+}
+.mini-globe-frame svg { width: 100%; height: 100%; display: block; }
+.hero-sphere-outline { fill: #16283f; stroke: rgba(255, 255, 255, 0.18); stroke-width: 1; }
+.hero-graticule { fill: none; stroke: rgba(255, 255, 255, 0.13); stroke-width: 0.5; }
+.hero-land { fill: #4f8fc7; stroke: rgba(255, 255, 255, 0.16); stroke-width: 0.4; }
+
+.home-brand-text { display: flex; flex-direction: column; min-width: 0; }
+.home-brand-text h1 { font-size: 18px; font-weight: 800; margin: 0; letter-spacing: -0.01em; color: var(--text-primary); }
+.home-tagline { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.home-inner {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 16px clamp(16px, 3vw, 48px) 28px;
+}
+
+.level-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 6px 14px;
+  min-width: 170px;
+}
+.level-num { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+.xp-track { height: 5px; border-radius: 999px; background: var(--eliminated-fill); overflow: hidden; }
+.xp-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--group-a), var(--guessable)); width: 0%; transition: width 500ms ease; }
+.xp-label { font-size: 10px; color: var(--text-muted); }
+.best-streak { font-size: 10.5px; color: #b9a6ff; font-weight: 700; }
+
+.tier-picker {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.callout-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.daily-callout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 260px;
+  text-align: left;
+  font: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--group-a) 12%, var(--surface-1)), var(--surface-1));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  color: var(--group-a);
+}
+.atlas-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--guessable) 12%, var(--surface-1)), var(--surface-1)); color: var(--guessable); }
+.daily-callout-text { display: flex; flex-direction: column; gap: 2px; }
+.daily-callout-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.daily-callout-sub { font-size: 12px; color: var(--text-secondary); }
+.tier-chip {
+  font: inherit;
+  font-size: 12.5px;
   font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.tier-chip.active { background: var(--group-a); border-color: var(--group-a); color: #ffffff; }
+.tier-chip.locked { color: var(--text-muted); cursor: not-allowed; opacity: 0.7; }
+.tier-lock { font-weight: 600; display: inline-flex; align-items: center; gap: 3px; vertical-align: -1px; }
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  font: inherit;
   background: var(--surface-1);
   border: 1px solid var(--border);
-  padding: 10px 24px;
-  border-radius: 999px;
+  animation: cardIn 380ms ease both;
+  border-radius: 11px;
+  padding: 12px 14px;
   box-shadow: var(--shadow);
-  z-index: 3;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
-.kiosk-exit { display: none; }
-.viz-root.kiosk .kiosk-exit {
+.mode-card:hover { transform: translateY(-2px); }
+.mode-icon { width: 22px; height: 22px; color: var(--group-a); }
+.mode-title { font-size: 14px; font-weight: 700; }
+.mode-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.35; }
+
+.home-footer {
   display: flex;
   align-items: center;
-  gap: 6px;
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 3;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
-.kiosk-banner { display: none; }
+.home-footer-note { font-size: 11.5px; color: var(--text-muted); }
 
 /* responsive ------------------------------------------------------------- */
 @media (max-width: 640px) {
-  h1 { font-size: 17px; }
-  .stat-chip { min-width: 54px; padding: 4px 8px; }
-  .mission .find { font-size: 13.5px; }
-  .mission .find b { font-size: 15px; }
+  .home-inner { padding: 16px 14px 32px; }
+  .level-badge { min-width: 0; max-width: none; }
+  .mode-grid { grid-template-columns: 1fr; }
+  .home-topbar { padding: 10px 14px; }
+  .home-tagline { display: none; } /* keep the top bar to one compact row on small screens */
+  .level-badge { min-width: 0; padding: 5px 10px; }
+  .hud-top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); }
+  .brand-chip { padding: 6px 9px; }
+  .brand-chip span { font-size: 13px; } /* keep the title visible while playing, just tighter */
+  .brand-chip svg { width: 18px; height: 18px; }
+  .stat-chip { min-width: 46px; padding: 4px 8px; }
+  .hud-mission { top: 60px; padding: 8px 14px; }
+  .find { font-size: 13px; }
+  .find b { font-size: 15px; }
+  .hud-bottom { bottom: max(8px, env(safe-area-inset-bottom)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); }
+  .hint { display: none; } /* save space; discoverable via the legend + buttons */
+  .actions { justify-content: space-between; }
   .overlay .big { font-size: 22px; }
 }
