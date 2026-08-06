@@ -9,18 +9,10 @@
   const { buildPath } = GN.geoPartition;
 
   function wirePanel(ctx) {
-    const discoveryToggle = document.getElementById('discovery-toggle');
-    discoveryToggle.checked = ctx.state.discoveryMode;
-    discoveryToggle.addEventListener('change', () => {
-      ctx.state.discoveryMode = discoveryToggle.checked;
-      if (!ctx.state.discoveryMode) ctx.hud.hideTooltip();
-      ctx.hud.showToast(ctx.state.discoveryMode ? 'Discovery mode on — hover shows names' : 'Discovery mode off');
-    });
     const guessBtn = document.getElementById('guess-btn');
     guessBtn.addEventListener('click', () => {
       if (!ctx.data.features || ctx.hud.isWinShown() || ctx.state.inputLocked) return;
       setGuessMode(ctx, !ctx.state.guessMode);
-      ctx.hud.hideTooltip();
       paintLevel(ctx);
     });
     ctx.state.guessBtnEl = guessBtn;
@@ -91,7 +83,6 @@
 
     if (clickedSide === targetSide) {
       ctx.state.inputLocked = true;
-      ctx.hud.hideTooltip();
       ctx.map.flashCountries(clickedSet, 'flash-good');
       ctx.scheduleTimeout(() => {
         GN.progression.applyOutcome({ type: 'correct', cost: NARROW_CORRECT_COST });
@@ -117,7 +108,6 @@
     if (!step.subset.includes(idx)) return;
     if (idx === ctx.state.targetIdx) {
       ctx.state.inputLocked = true;
-      ctx.hud.hideTooltip();
       ctx.map.flashCountries([idx], 'flash-good');
       ctx.scheduleTimeout(() => finishGame(ctx, [idx], true), 260);
     } else {
@@ -168,7 +158,7 @@
       const pool = GN.progression.buildPool(ctx.data.playableIndices);
       ctx.state = {
         path: null, level: 0, targetIdx: null, guessMode: false, inputLocked: true,
-        discoveryMode: false, pool,
+        pool,
       };
       GN.progression.reset();
       ctx.hud.setStats([
@@ -184,9 +174,6 @@
         '<span class="elim"><span class="swatch"></span>Eliminated</span>'
       );
       ctx.hud.setPanel(
-        '<label class="switch-label" title="Show country names on hover — off during normal play">' +
-        '<span class="switch"><input type="checkbox" id="discovery-toggle"><span class="switch-track"><span class="switch-thumb"></span></span></span>' +
-        'Discovery</label>' +
         '<button class="hud-btn" id="guess-btn" title="Guess the exact country directly, without narrowing">' +
         '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none"/></svg>' +
         'Guess directly</button>'
@@ -201,15 +188,6 @@
       ctx.hud.setLegend('');
     },
     onMapClick(ctx, idx) { onCountryClick(ctx, idx); },
-    onHover(ctx, idx, event) {
-      if (!ctx.state.discoveryMode) return;
-      ctx.hud.showTooltip(event, ctx.data.names[idx]);
-    },
-    onMove(ctx, event) {
-      if (!ctx.state.discoveryMode) return;
-      ctx.hud.moveTooltip(event);
-    },
-    onLeave(ctx) { ctx.hud.hideTooltip(); },
   };
 
   GN.modeShell.registerMode('narrow', mode);

@@ -7,7 +7,16 @@
   // it only needs GN.storage/GN.progression, not the map data, so there's no
   // reason to make players stare at a blank page while ~370KB loads. A
   // #hash direct-link still bypasses Home once data is ready, below.
-  const directModeAtLoad = (location.hash || '').replace('#', '');
+  let directModeAtLoad = (location.hash || '').replace('#', '');
+  if (directModeAtLoad === 'flags' && !GN.progression.getShowFlags()) {
+    // A #flags direct link (old bookmark, saved home-screen shortcut, browser
+    // history) bypasses GN.home.enterMode()'s showFlags guard entirely, since
+    // it calls GN.modeShell.start() straight away below — enforce the same
+    // rule here instead of silently honoring the link.
+    directModeAtLoad = '';
+    history.replaceState(null, '', location.pathname + location.search);
+    GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Flag Frenzy.');
+  }
   if (!directModeAtLoad) GN.home.show();
 
   Promise.all([
