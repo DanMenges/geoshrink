@@ -6,32 +6,32 @@
   // in modes/multiplayer.js, which reads/writes room documents through the
   // generic primitives here. Uses the Firebase compat/namespaced CDN SDK to
   // match this codebase's plain-<script>, non-module GN.* pattern.
+  //
+  // Identity (the Firebase app instance, Auth session, anonymous sign-in) is
+  // owned entirely by engine/account.js — this module only asks it for a
+  // UID, rather than running a second, independent auth flow that could end
+  // up signed in as someone else. A signed-in (not just anonymous) player's
+  // multiplayer rooms follow that same UID automatically, for free.
 
-  let app, auth, db, uid;
+  let db;
   let roomUnsub = null;
 
   function available() {
-    return !!(window.firebase && window.GN_FIREBASE_CONFIG);
+    return !!(window.GN && GN.account && GN.account.available());
   }
 
   function init() {
-    if (app) return;
-    if (!window.GN_FIREBASE_CONFIG) throw new Error('firebase-config.js is missing — multiplayer needs a Firebase project config.');
-    app = firebase.initializeApp(window.GN_FIREBASE_CONFIG);
-    auth = firebase.auth();
+    if (db) return;
+    if (!available()) throw new Error('Multiplayer needs a Firebase project config.');
     db = firebase.firestore();
   }
 
   function signIn() {
     init();
-    if (uid) return Promise.resolve(uid);
-    return auth.signInAnonymously().then((cred) => {
-      uid = cred.user.uid;
-      return uid;
-    });
+    return GN.account.ensureAnonymous().then((user) => user.uid);
   }
 
-  function getUid() { return uid; }
+  function getUid() { return GN.account.getUid(); }
 
   // No ambiguous chars (0/O, 1/I/L) — this is read aloud/typed by hand.
   function randomRoomCode() {
@@ -42,7 +42,7 @@
   }
 
   function createRoom(difficulty, name) {
-    return signIn().then(() => {
+    return signIn().then((uid) => {
       function attempt(triesLeft) {
         const code = randomRoomCode();
         const ref = db.collection('rooms').doc(code);
@@ -73,7 +73,7 @@
   }
 
   function joinRoom(roomCode, name) {
-    return signIn().then(() => {
+    return signIn().then((uid) => {
       const ref = db.collection('rooms').doc(roomCode);
       return db.runTransaction((tx) => tx.get(ref).then((snap) => {
         if (!snap.exists) throw new Error('Room not found — check the code and try again.');
@@ -105,10 +105,12 @@
   }
 
   function submitPick(roomCode, choice) {
+    const uid = getUid();
     return updateRoom(roomCode, { ['submissions.' + uid]: { choice, submittedAt: Date.now() } });
   }
 
   function setConnected(roomCode, connected) {
+    const uid = getUid();
     if (!uid) return Promise.resolve();
     return updateRoom(roomCode, { ['players.' + uid + '.connected']: connected }).catch(() => {});
   }

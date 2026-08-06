@@ -288,6 +288,31 @@ svg#map { display: block; width: 100%; height: 100%; }
 :root[data-theme="dark"] .wallet-chip:hover { filter: brightness(1.2); }
 .wallet-chip svg { flex: none; }
 
+/* Deliberately low-key — this is an optional upgrade path, not something
+   players are pushed toward. Same quiet chip treatment as the wallet, not a
+   bigger/brighter "sign in now!" callout. */
+.account-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  max-width: 140px;
+}
+.account-chip:hover { filter: brightness(0.97); }
+@media (prefers-color-scheme: dark) { .account-chip:hover { filter: brightness(1.2); } }
+:root[data-theme="dark"] .account-chip:hover { filter: brightness(1.2); }
+.account-chip svg { flex: none; }
+.account-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .stats { display: flex; gap: 7px; flex-wrap: wrap; }
 .stat-chip {
   display: flex;
@@ -625,6 +650,19 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 }
 .shield-count { font-size: 13px; color: var(--text-secondary); }
 .shield-count b { color: var(--text-primary); }
+
+/* account overlay (reuses .shop-overlay/.shop-card/.shop-header/.shop-hint) */
+.account-provider-btn {
+  width: 100%;
+  justify-content: center;
+  background: #ffffff;
+  color: #1f1f1f;
+  border-color: #d5d5d5;
+}
+.account-provider-btn:hover { filter: brightness(0.97); }
+.account-email-toggle-btn { width: 100%; justify-content: center; background: transparent; }
+.account-danger-btn { color: var(--critical); border-color: var(--critical); }
+.account-danger-btn:hover { background: color-mix(in srgb, var(--critical) 10%, var(--surface-1)); }
 
 /* home screen ------------------------------------------------------------- */
 .board {
