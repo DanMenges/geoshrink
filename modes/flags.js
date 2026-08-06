@@ -8,7 +8,7 @@
   function repaint(ctx) {
     const inPlay = new Set(ctx.state.pool);
     ctx.map.paintClasses({
-      'available': (i) => inPlay.has(i),
+      'guessable': (i) => inPlay.has(i),
       'eliminated': (i) => !inPlay.has(i),
     });
     ctx.map.clearFlashClasses();
@@ -40,6 +40,7 @@
   }
 
   const mode = {
+    title: 'Flag Frenzy',
     setup(ctx) {
       ctx.state = { targetIdx: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
@@ -48,7 +49,10 @@
         { id: 'streak', value: String(GN.progression.getCurrentStreak()), label: 'Streak' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);
-      ctx.hud.setLegend('<span class="elim"><span class="swatch"></span>Not in play</span>');
+      ctx.hud.setLegend(
+        '<span class="g"><span class="swatch"></span>Click to answer</span>' +
+        '<span class="elim"><span class="swatch"></span>Not in play</span>'
+      );
       ctx.hud.setHint('Click the country this flag belongs to.');
       nextRound(ctx);
     },

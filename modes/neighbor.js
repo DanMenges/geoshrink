@@ -13,7 +13,7 @@
     ctx.map.paintClasses({
       'group-a': (i) => i === targetIdx,
       'group-b': (i) => i !== targetIdx && ctx.selection.has(i),
-      'available': (i) => i !== targetIdx && !ctx.selection.has(i) && inPlay.has(i),
+      'guessable': (i) => i !== targetIdx && !ctx.selection.has(i) && inPlay.has(i),
       'eliminated': (i) => !inPlay.has(i),
     });
     ctx.map.clearFlashClasses();
@@ -71,6 +71,7 @@
   }
 
   const mode = {
+    title: 'Neighbor Match',
     setup(ctx) {
       ctx.state = { targetIdx: null, trueNeighbors: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.playableIndices) };
       GN.progression.reset();
@@ -82,6 +83,7 @@
       ctx.hud.setLegend(
         '<span class="a"><span class="swatch"></span>Reference country</span>' +
         '<span class="b"><span class="swatch"></span>Your picks</span>' +
+        '<span class="g"><span class="swatch"></span>Click to select</span>' +
         '<span class="elim"><span class="swatch"></span>Not in play</span>'
       );
       ctx.hud.setPanel(

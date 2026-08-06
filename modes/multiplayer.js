@@ -275,6 +275,7 @@
   }
 
   const mode = {
+    title: 'Multiplayer',
     setup(ctx) {
       mp.matchCtx = ctx;
       mp.lastRound = -1;

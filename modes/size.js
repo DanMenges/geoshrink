@@ -51,6 +51,7 @@
   }
 
   const mode = {
+    title: 'Size Showdown',
     setup(ctx) {
       ctx.state = { pair: null, inputLocked: false, rounds: 0, pool: GN.progression.buildPool(ctx.data.playableIndices) };
       GN.progression.reset();
@@ -62,7 +63,8 @@
       ]);
       ctx.hud.setLegend(
         '<span class="a"><span class="swatch"></span>Option A</span>' +
-        '<span class="b"><span class="swatch"></span>Option B</span>'
+        '<span class="b"><span class="swatch"></span>Option B</span>' +
+        '<span class="avail"><span class="swatch"></span>Other countries</span>'
       );
       ctx.hud.setPanel('');
       ctx.hud.setHint('Click the country you think has the larger land area.');

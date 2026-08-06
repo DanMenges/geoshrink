@@ -129,6 +129,7 @@
   }
 
   const mode = {
+    title: 'Daily Challenge',
     setup(ctx) {
       const date = todayUTCString();
       const dayNum = dailyNumber();

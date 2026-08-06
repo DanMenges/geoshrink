@@ -42,11 +42,13 @@
     }
     bumpRound();
     GN.hud.hideWin();
+    GN.hud.hideRoundResult();
     GN.hud.hideTooltip();
     GN.map.resetRotation();
     const def = modes[modeId];
     const newCtx = buildContext(options || {});
     current = { def, ctx: newCtx, id: modeId, startOptions: options };
+    GN.hud.setModeTitle(def.title || '');
     def.setup(newCtx);
   }
 
@@ -61,6 +63,9 @@
     }
     bumpRound();
     current = null;
+    GN.hud.hideWin();
+    GN.hud.hideRoundResult();
+    GN.hud.setModeTitle('');
   }
 
   GN.modeShell = {

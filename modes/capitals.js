@@ -62,6 +62,7 @@
   }
 
   const mode = {
+    title: 'Capital Match',
     setup(ctx) {
       ctx.state = { targetIdx: null, choices: [], inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
@@ -70,8 +71,11 @@
         { id: 'streak', value: String(GN.progression.getCurrentStreak()), label: 'Streak' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);
-      ctx.hud.setLegend('<span class="elim"><span class="swatch"></span>Not in play</span>');
-      ctx.hud.setHint('Pick the country whose capital is shown above.');
+      ctx.hud.setLegend(
+        '<span class="avail"><span class="swatch"></span>Candidate pool</span>' +
+        '<span class="elim"><span class="swatch"></span>Not in play</span>'
+      );
+      ctx.hud.setHint('Pick the country whose capital is shown above — the map is just for reference.');
       nextRound(ctx);
     },
     teardown(ctx) { ctx.hud.setPanel(''); ctx.hud.setLegend(''); },

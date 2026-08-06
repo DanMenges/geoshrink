@@ -68,11 +68,21 @@
     ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
     ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
     ctx.hud.updateStat('streak', String(GN.progression.getCurrentStreak()));
-    ctx.hud.showToast(ctx.data.names[ctx.state.impostor] + ' is the odd one out.');
-    ctx.scheduleTimeout(() => nextRound(ctx), 1500);
+    // A short delay so the map's flash colors are visible before the
+    // overlay covers it, then wait for the player's own "Next round" click
+    // instead of auto-advancing — they choose when they're done reading.
+    ctx.scheduleTimeout(() => {
+      ctx.hud.showRoundResult({
+        correct,
+        title: correct ? 'Correct!' : 'Not quite',
+        sub: ctx.data.names[ctx.state.impostor] + ' is the odd one out — the other five are all ' + ORG_LABELS[ctx.state.org] + ' members.',
+        onNext: () => nextRound(ctx),
+      });
+    }, 550);
   }
 
   const mode = {
+    title: 'Bloc Bingo',
     setup(ctx) {
       ctx.state = { org: null, impostor: null, all: [], inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();

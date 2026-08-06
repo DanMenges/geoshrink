@@ -2,12 +2,17 @@
   const GN = window.GN = window.GN || {};
 
   const statsContainer = document.querySelector('.stats');
+  const modeTitleLabel = document.getElementById('mode-title-label');
   const targetBanner = document.getElementById('target-banner');
   const progressFill = document.getElementById('progress-fill');
   const winOverlay = document.getElementById('win-overlay');
   const winTitle = document.getElementById('win-title');
   const winSub = document.getElementById('win-sub');
   const winBonus = document.getElementById('win-bonus');
+  const roundResultOverlay = document.getElementById('round-result-overlay');
+  const roundResultTitle = document.getElementById('round-result-title');
+  const roundResultSub = document.getElementById('round-result-sub');
+  const roundResultNextBtn = document.getElementById('round-result-next');
   const tooltip = document.getElementById('tooltip');
   const boardEl = document.querySelector('.board');
   const toast = document.getElementById('toast');
@@ -33,6 +38,7 @@
   function setLegend(html) { legendEl.innerHTML = html; }
   function setHint(text) { hint.textContent = text; }
   function setTarget(html) { targetBanner.innerHTML = html; }
+  function setModeTitle(text) { modeTitleLabel.textContent = text || ''; }
   function setProgress(fraction) {
     progressFill.style.width = Math.round(Math.max(0, Math.min(1, fraction)) * 100) + '%';
   }
@@ -78,13 +84,30 @@
   function hideWin() { winOverlay.classList.remove('show'); }
   function isWinShown() { return winOverlay.classList.contains('show'); }
 
+  // A lightweight, per-round sibling of showWin() — reveals the correct
+  // answer front and center and waits for the player to press Next rather
+  // than auto-advancing on a timer, so they can actually read and learn it
+  // before moving on.
+  function showRoundResult({ correct, title, sub, nextLabel, onNext }) {
+    roundResultTitle.textContent = title;
+    roundResultSub.textContent = sub;
+    roundResultOverlay.classList.toggle('correct', !!correct);
+    roundResultOverlay.classList.toggle('wrong', !correct);
+    roundResultNextBtn.textContent = nextLabel || 'Next round';
+    roundResultNextBtn.onclick = () => { hideRoundResult(); if (onNext) onNext(); };
+    roundResultOverlay.classList.add('show');
+  }
+  function hideRoundResult() { roundResultOverlay.classList.remove('show'); }
+  function isRoundResultShown() { return roundResultOverlay.classList.contains('show'); }
+
   function shakeBoard() {
     boardEl.classList.remove('shake'); void boardEl.offsetWidth; boardEl.classList.add('shake');
   }
 
   GN.hud = {
-    setStats, updateStat, setPanel, setLegend, setHint, setTarget, setProgress,
+    setStats, updateStat, setPanel, setLegend, setHint, setTarget, setModeTitle, setProgress,
     showTooltip, moveTooltip, hideTooltip, showToast, showWin, hideWin, isWinShown, shakeBoard,
+    showRoundResult, hideRoundResult, isRoundResultShown,
     winOverlay, boardEl,
   };
 })();

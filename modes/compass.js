@@ -65,6 +65,7 @@
   }
 
   const mode = {
+    title: 'Compass Quiz',
     setup(ctx) {
       ctx.state = { ref: null, target: null, answer: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.playableIndices) };
       GN.progression.reset();
@@ -75,9 +76,10 @@
       ]);
       ctx.hud.setLegend(
         '<span class="a"><span class="swatch"></span>Reference</span>' +
-        '<span class="b"><span class="swatch"></span>Target</span>'
+        '<span class="b"><span class="swatch"></span>Target</span>' +
+        '<span class="avail"><span class="swatch"></span>Other countries</span>'
       );
-      ctx.hud.setHint('Pick the compass direction of the target relative to the reference country.');
+      ctx.hud.setHint('Pick the compass direction of the target relative to the reference country — use the buttons below, the map isn’t clickable here.');
       nextRound(ctx);
     },
     teardown(ctx) { ctx.hud.setPanel(''); ctx.hud.setLegend(''); },

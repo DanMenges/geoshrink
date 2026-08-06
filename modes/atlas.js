@@ -21,6 +21,7 @@
   }
 
   const mode = {
+    title: 'World Atlas',
     setup(ctx) {
       ctx.state = {};
       const all = ctx.data.playableIndices;
@@ -31,10 +32,7 @@
       // active theme still shows through ambiently (ocean/graticule tint,
       // Dinosaur's watermark illustrations), just not via bespoke per-mode
       // rendering.
-      const classMap = {
-        'group-a': () => false, 'group-b': () => false, 'guessable': () => false,
-        'eliminated': () => false, 'available': () => false,
-      };
+      const classMap = {};
       Object.values(CONTINENT_CLASS).concat(['cont-other']).forEach((cls) => {
         classMap[cls] = (i) => classFor(i, ctx) === cls;
       });

@@ -56,7 +56,7 @@
     const inPlay = new Set(ctx.data.playableIndices);
     ctx.map.paintClasses({
       'exp-done': (i) => doneSet.has(i),
-      'available': (i) => !doneSet.has(i) && inPlay.has(i),
+      'guessable': (i) => !doneSet.has(i) && inPlay.has(i),
       'eliminated': (i) => !inPlay.has(i),
     });
     ctx.map.clearFlashClasses();
@@ -143,7 +143,6 @@
     if (success) {
       ctx.map.paintClasses({
         'exp-done': (i) => ctx.state.route.includes(i),
-        'available': () => false,
         'eliminated': (i) => !ctx.data.playableIndices.includes(i) && !ctx.state.route.includes(i),
       });
       ctx.hud.showWin({
@@ -160,6 +159,7 @@
   }
 
   const mode = {
+    title: 'Expedition',
     setup(ctx) {
       const difficulty = GN.progression.getSelectedDifficulty();
       const desiredLegs = LEGS_BY_DIFFICULTY[difficulty.id] || LEGS_BY_DIFFICULTY.easy;
@@ -180,6 +180,7 @@
       updateSupplyStat(ctx);
       ctx.hud.setLegend(
         '<span class="known"><span class="swatch"></span>Traveled</span>' +
+        '<span class="g"><span class="swatch"></span>Click to advance</span>' +
         '<span class="elim"><span class="swatch"></span>Not in play</span>'
       );
       ctx.hud.setPanel('');

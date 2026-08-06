@@ -117,6 +117,7 @@
   }
 
   const mode = {
+    title: 'Fog of War',
     setup(ctx) {
       ctx.state = loadState(ctx);
       ctx.state.inputLocked = false;

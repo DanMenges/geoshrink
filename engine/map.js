@@ -334,11 +334,27 @@
       });
   }
 
+  // Every class any mode ever paints onto a country. A call to paintClasses()
+  // only ever mentions the handful of classes ITS mode cares about — without
+  // this, switching modes (e.g. Narrow Down -> Flag Frenzy) left whatever
+  // classes the previous mode set (group-a/group-b/guessable/cont-N/...)
+  // stuck on countries the new mode never touches, which could visually win
+  // out over the new mode's own classes depending on CSS cascade order (a
+  // real bug: countries showing up blue/orange/violet in modes that never
+  // asked for that color). paintClasses() below always clears every class in
+  // this list that the current call doesn't explicitly set, so each call is
+  // a complete, exclusive description of the map's state, not an overlay.
+  const PAINT_CLASSES = [
+    'group-a', 'group-b', 'guessable', 'eliminated', 'available',
+    'cont-1', 'cont-2', 'cont-3', 'cont-4', 'cont-5', 'cont-other',
+    'fog-known', 'fog-frontier', 'exp-done',
+  ];
   function paintClasses(classMap) {
     const sel = gCountries.selectAll('path.country');
-    for (const cls in classMap) {
-      sel.classed(cls, (_, i) => classMap[cls](i));
-    }
+    PAINT_CLASSES.forEach((cls) => {
+      const fn = Object.prototype.hasOwnProperty.call(classMap, cls) ? classMap[cls] : () => false;
+      sel.classed(cls, (_, i) => fn(i));
+    });
   }
 
   function clearFlashClasses() {

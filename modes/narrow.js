@@ -154,6 +154,7 @@
   }
 
   const mode = {
+    title: 'Narrow Down',
     setup(ctx) {
       const pool = GN.progression.buildPool(ctx.data.playableIndices);
       ctx.state = {
