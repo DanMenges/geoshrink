@@ -382,14 +382,25 @@ svg#map { display: block; width: 100%; height: 100%; }
 }
 .mode-panel { display: contents; }
 
-.flag-img {
-  height: 34px;
+/* Flag Frenzy's flag, shown inline with the question in the mission banner
+   rather than small in the bottom action bar — it's the whole point of the
+   round, so it gets to be the visually dominant element there. */
+.find-with-flag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.find-flag-img {
+  height: 68px;
   width: auto;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   display: block;
   background: var(--surface-1);
+  flex: none;
 }
 
 .switch-label {
@@ -962,6 +973,7 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .hud-mission { padding: 8px 14px; }
   .find { font-size: 13px; }
   .find b { font-size: 15px; }
+  .find-flag-img { height: 48px; }
   .mp-scoreboard { width: 100%; align-self: stretch; } /* right-docked sidebar doesn't fit next to a near-full-width mission banner on phones — stack instead */
 
   /* icon-only HUD buttons keep a touch-friendly hit area even as content shrinks */

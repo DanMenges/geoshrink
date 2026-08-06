@@ -18,8 +18,12 @@
     ctx.state.inputLocked = false;
     ctx.state.targetIdx = pickFlagTarget(ctx);
     const meta = ctx.data.metaByIdx(ctx.state.targetIdx);
-    ctx.hud.setPanel('<img class="flag-img" src="flags/' + meta.iso2 + '.svg" alt="Flag to identify">');
-    ctx.hud.setTarget('Which country does this flag belong to?');
+    ctx.hud.setTarget(
+      '<div class="find-with-flag">' +
+      '<img class="find-flag-img" src="flags/' + meta.iso2 + '.svg" alt="Flag to identify">' +
+      '<span>Which country does this flag belong to?</span>' +
+      '</div>'
+    );
     ctx.map.setActiveFeatureIndices(ctx.state.pool);
     repaint(ctx);
   }
