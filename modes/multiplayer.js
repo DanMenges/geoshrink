@@ -2,7 +2,12 @@
   const GN = window.GN = window.GN || {};
 
   const STEP_MS = 15000;
-  const TIMEOUT_COST = 50;
+  // Not submitting anything costs exactly as much as an honest wrong guess —
+  // deliberately not a cheaper "safe" option. A separate, lighter timeout
+  // cost would let a player passively coast through a step for less than
+  // engaging and guessing wrong does, which undermines the whole point of a
+  // timed battle: every step, you're better off actually playing.
+  const TIMEOUT_COST = 250;
   const CORRECT_STEP_COST = 50;
   const WRONG_STEP_COST = 250;
 
@@ -221,9 +226,14 @@
   function renderScoreboard(room) {
     if (!room || room.status !== 'active') { scoreboardEl.innerHTML = ''; return; }
     const myUid = GN.multiplayer.getUid();
-    const rows = Object.keys(room.players || {}).map((uid) => {
+    // Ranked highest-first, with a uid tiebreak — Firestore doesn't guarantee
+    // player map key order is identical across clients, so sorting by score
+    // alone could still show ties in a different order on each device.
+    const ranked = Object.keys(room.players || {})
+      .map((uid) => ({ uid, score: liveScore(room, uid) }))
+      .sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid));
+    const rows = ranked.map(({ uid, score }) => {
       const p = room.players[uid];
-      const score = liveScore(room, uid);
       const submitted = !!(room.submissions && room.submissions[uid]);
       return '<div class="mp-player-row' + (uid === myUid ? ' me' : '') + '">' +
         '<span class="mp-player-name">' + escapeHtml(p.name) + '</span>' +

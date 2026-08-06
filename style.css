@@ -946,6 +946,7 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .mp-player-row:first-of-type { border-top: none; }
 .mp-player-row.me { background: color-mix(in srgb, var(--group-a) 8%, transparent); }
 .mp-player-name { flex: 1; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-player-row.me .mp-player-name { color: var(--group-a); }
 .mp-player-score { font-weight: 800; color: var(--guessable); font-variant-numeric: tabular-nums; }
 .mp-player-status { width: 16px; text-align: center; color: var(--text-muted); }
 .mp-player-status.submitted { color: var(--good); }

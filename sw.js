@@ -1,4 +1,4 @@
-const CACHE = 'geoshrink-v24';
+const CACHE = 'geoshrink-v25';
 const ASSETS = [
   './',
   './index.html',
