@@ -55,13 +55,16 @@
     picked.forEach((i) => { if (!trueSet.has(i)) ctx.map.flashCountries([i], 'flash-bad'); });
 
     let outcome;
-    if (ratio >= 0.999) outcome = { type: 'correct', cost: 10 };
-    else if (ratio <= 0.001) outcome = { type: 'wrong', cost: 50 };
-    else outcome = { type: 'partial', cost: Math.round(10 + (1 - ratio) * 40) };
+    if (ratio >= 0.999) outcome = { type: 'correct', points: 50 };
+    else if (ratio <= 0.001) outcome = { type: 'wrong' };
+    // Partial credit scales with how complete the answer was — a mostly-right
+    // pick earns most of the 50, not a flat consolation amount independent
+    // of how close you actually got.
+    else outcome = { type: 'partial', points: Math.round(50 * ratio), partialRatio: ratio };
     GN.progression.applyOutcome(outcome);
 
     ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
-    ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+    ctx.hud.updateStat('points', String(GN.progression.getScore()));
     ctx.hud.showToast(
       ratio >= 0.999 ? 'Perfect! All neighbors found.' :
       ratio <= 0.001 ? 'No matches — on to the next one.' :
@@ -77,7 +80,7 @@
       GN.progression.reset();
       ctx.hud.setStats([
         { id: 'selected', value: '0', label: 'Selected' },
-        { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },
+        { id: 'points', value: '0', label: 'Points', cls: 'stat-points' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);
       ctx.hud.setLegend(

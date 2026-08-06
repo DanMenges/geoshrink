@@ -99,6 +99,10 @@
       ctx.state.inputLocked = true;
       ctx.map.flashCountries([idx], 'flash-good');
       ctx.scheduleTimeout(() => {
+        // Fog of War previously never touched the shared progression system
+        // at all — correct identifications here earned no XP or coins, even
+        // though it's a real quiz mechanic like any other mode's.
+        GN.progression.applyOutcome({ type: 'correct', points: 50 });
         ctx.state.revealed.add(idx);
         persist(ctx);
         ctx.state.inputLocked = false;

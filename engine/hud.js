@@ -71,8 +71,9 @@
     if (!failed && GN.progression && GN.progression.applyWinBonus) {
       const result = GN.progression.applyWinBonus();
       if (result.bonus > 0) {
+        const mistakes = GN.progression.getMistakes();
         bonusText = '+' + result.bonus + ' bonus coin' + (result.bonus === 1 ? '' : 's') +
-          ' for finishing with ' + GN.progression.getScore() + ' points left';
+          (mistakes === 0 ? ' for a flawless run!' : ' for finishing with ' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's'));
       }
     }
     if (winBonus) {

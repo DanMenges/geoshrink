@@ -1,8 +1,13 @@
 (function () {
   const GN = window.GN = window.GN || {};
 
-  const NARROW_CORRECT_COST = 10;
-  const WRONG_COST = 50;
+  const NARROW_CORRECT_POINTS = 50;
+  // A blind guess before narrowing at all (level 0) is worth the full 1000 —
+  // the riskiest, most impressive play. Each round already spent narrowing
+  // chips 100 off that ceiling, since the guess got easier with every
+  // elimination along the way.
+  const DIRECT_GUESS_BASE = 1000;
+  const DIRECT_GUESS_STEP = 100;
   const HINT_DEFAULT = 'Click the highlighted region you believe contains the target country.';
   const HINT_GUESS = 'Guess mode: click any highlighted country to name it directly.';
 
@@ -61,7 +66,7 @@
     const total = ctx.state.pool.length;
     ctx.hud.updateStat('round', (lvl + 1) + ' / ~' + Math.ceil(Math.log2(total)));
     ctx.hud.updateStat('remaining', remaining);
-    ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+    ctx.hud.updateStat('points', String(GN.progression.getScore()));
     const progress = remaining >= total ? 0 : 1 - Math.log(remaining) / Math.log(total);
     ctx.hud.setProgress(progress);
   }
@@ -85,8 +90,8 @@
       ctx.state.inputLocked = true;
       ctx.map.flashCountries(clickedSet, 'flash-good');
       ctx.scheduleTimeout(() => {
-        GN.progression.applyOutcome({ type: 'correct', cost: NARROW_CORRECT_COST });
-        ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+        GN.progression.applyOutcome({ type: 'correct', points: NARROW_CORRECT_POINTS });
+        ctx.hud.updateStat('points', String(GN.progression.getScore()));
         ctx.state.level++;
         if (clickedSet.length === 1 || !ctx.state.path[ctx.state.level]) {
           finishGame(ctx, clickedSet, false);
@@ -96,9 +101,9 @@
       }, 260);
     } else {
       const sel = ctx.map.flashCountries(clickedSet, 'flash-bad');
-      GN.progression.applyOutcome({ type: 'wrong', cost: WRONG_COST });
+      GN.progression.applyOutcome({ type: 'wrong' });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
-      ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+      ctx.hud.updateStat('points', String(GN.progression.getScore()));
       ctx.hud.shakeBoard();
       ctx.scheduleTimeout(() => sel.classed('flash-bad', false), 320);
     }
@@ -109,12 +114,16 @@
     if (idx === ctx.state.targetIdx) {
       ctx.state.inputLocked = true;
       ctx.map.flashCountries([idx], 'flash-good');
-      ctx.scheduleTimeout(() => finishGame(ctx, [idx], true), 260);
+      ctx.scheduleTimeout(() => {
+        const points = Math.max(0, DIRECT_GUESS_BASE - DIRECT_GUESS_STEP * ctx.state.level);
+        GN.progression.applyOutcome({ type: 'correct', points });
+        finishGame(ctx, [idx], true);
+      }, 260);
     } else {
       const sel = ctx.map.flashCountries([idx], 'flash-bad');
-      GN.progression.applyOutcome({ type: 'wrong', cost: WRONG_COST });
+      GN.progression.applyOutcome({ type: 'wrong' });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
-      ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+      ctx.hud.updateStat('points', String(GN.progression.getScore()));
       ctx.hud.shakeBoard();
       ctx.scheduleTimeout(() => {
         sel.classed('flash-bad', false);
@@ -141,14 +150,14 @@
       const score = GN.progression.getScore();
       ctx.hud.updateStat('round', String(level));
       ctx.hud.updateStat('remaining', '1');
-      ctx.hud.updateStat('points', score + ' / ' + GN.progression.MAX_SCORE);
+      ctx.hud.updateStat('points', String(score));
       ctx.hud.setProgress(1);
       const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
       ctx.hud.showWin({
         title: ctx.data.names[ctx.state.targetIdx] + '!',
         sub: isDirectGuess
-          ? 'Guessed directly for ' + score + ' / ' + GN.progression.MAX_SCORE + ' points' + mistakeTxt + '.'
-          : 'Scored ' + score + ' / ' + GN.progression.MAX_SCORE + ' — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.',
+          ? 'Guessed directly for ' + score + ' points' + mistakeTxt + '.'
+          : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.',
       });
     });
   }
@@ -165,7 +174,7 @@
       ctx.hud.setStats([
         { id: 'round', value: '–', label: 'Round' },
         { id: 'remaining', value: '–', label: 'Left' },
-        { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },
+        { id: 'points', value: '0', label: 'Points', cls: 'stat-points' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);
       ctx.hud.setLegend(

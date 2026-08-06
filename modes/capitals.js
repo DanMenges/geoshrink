@@ -30,9 +30,9 @@
     const correct = idx === ctx.state.targetIdx;
     ctx.map.flashCountries([ctx.state.targetIdx], 'flash-good');
     if (!correct) ctx.map.flashCountries([idx], 'flash-bad');
-    GN.progression.applyOutcome(correct ? { type: 'correct', cost: 10 } : { type: 'wrong', cost: 50 });
+    GN.progression.applyOutcome(correct ? { type: 'correct', points: 50 } : { type: 'wrong' });
     ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
-    ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+    ctx.hud.updateStat('points', String(GN.progression.getScore()));
     ctx.hud.updateStat('streak', String(GN.progression.getCurrentStreak()));
     const meta = ctx.data.metaByIdx(ctx.state.targetIdx);
     ctx.scheduleTimeout(() => {
@@ -51,7 +51,7 @@
       ctx.state = { targetIdx: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
-        { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },
+        { id: 'points', value: '0', label: 'Points', cls: 'stat-points' },
         { id: 'streak', value: String(GN.progression.getCurrentStreak()), label: 'Streak' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);

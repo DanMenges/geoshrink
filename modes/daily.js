@@ -22,7 +22,7 @@
   function buildShareText(state) {
     const squares = state.history.map((clean) => (clean ? '🟦' : '🟥')).join('');
     return 'GeoShrink Daily #' + state.dayNum + '\n' + squares + '\n' +
-      state.score + '/1000 pts · ' + state.history.length + ' rounds · ' + state.mistakes + ' mistake' + (state.mistakes === 1 ? '' : 's');
+      state.score + ' pts · ' + state.history.length + ' rounds · ' + state.mistakes + ' mistake' + (state.mistakes === 1 ? '' : 's');
   }
 
   function wireCopyButton(ctx, shareText) {
@@ -90,7 +90,7 @@
       wireCopyButton(ctx, record.shareText);
       ctx.hud.showWin({
         title: record.targetName + '!',
-        sub: record.score + '/1000 pts · ' + record.history.length + ' rounds · ' + record.mistakes + ' mistake' + (record.mistakes === 1 ? '' : 's'),
+        sub: record.score + ' pts · ' + record.history.length + ' rounds · ' + record.mistakes + ' mistake' + (record.mistakes === 1 ? '' : 's'),
       });
     });
   }
@@ -109,7 +109,7 @@
       ctx.state.inputLocked = true;
       ctx.map.flashCountries(clickedSet, 'flash-good');
       ctx.scheduleTimeout(() => {
-        GN.progression.applyOutcome({ type: 'correct', cost: 10 });
+        GN.progression.applyOutcome({ type: 'correct', points: 50 });
         ctx.state.history.push(!ctx.state.roundHadMistake);
         ctx.state.roundHadMistake = false;
         ctx.state.level++;
@@ -121,7 +121,7 @@
       }, 260);
     } else {
       const sel = ctx.map.flashCountries(clickedSet, 'flash-bad');
-      GN.progression.applyOutcome({ type: 'wrong', cost: 50 });
+      GN.progression.applyOutcome({ type: 'wrong' });
       ctx.state.roundHadMistake = true;
       ctx.hud.shakeBoard();
       ctx.scheduleTimeout(() => sel.classed('flash-bad', false), 320);

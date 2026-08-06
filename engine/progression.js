@@ -1,6 +1,5 @@
 (function () {
   const GN = window.GN = window.GN || {};
-  const MAX_SCORE = 1000;
 
   // Difficulty is a freely-chosen preference, not an XP-gated unlock (the
   // old 4-tier system conflated the two). Reward scaling (xpMult) carries
@@ -43,7 +42,7 @@
 
   const SHIELD_PRICE = 120;
 
-  let score = MAX_SCORE;
+  let score = 0;
   let mistakes = 0;
 
   // --- persistent progression (XP / level / selected tier / wallet) --------
@@ -274,7 +273,7 @@
   let currentStreak = 0;
 
   function reset() {
-    score = MAX_SCORE;
+    score = 0;
     mistakes = 0;
     currentStreak = 0;
   }
@@ -284,32 +283,39 @@
   function getBestStreak() { return loadProgress().bestStreak || 0; }
 
   // --- win bonus --------------------------------------------------------
-  // A completion reward on top of per-answer coins, scaled by how much of
-  // the 1000-point pool survived to the end — a near-perfect round pays out
-  // far more than a scraped-by one. Called once per win from GN.hud.showWin,
-  // not per-mode, so every mode's win screen gets it for free.
-  function winBonusForScore(s) {
-    if (s >= MAX_SCORE) return 20;
-    if (s >= 950) return 10;
-    if (s >= 900) return 5;
-    if (s >= 800) return 3;
-    if (s >= 500) return 2;
+  // A completion reward on top of per-answer coins. Keyed to mistake count
+  // rather than the final score, since score is now an open-ended running
+  // total earned (not drawn down from a fixed pool) and its achievable range
+  // is different per mode — mistakes are the one signal every mode already
+  // tracks the same way, and "how clean was this run" is the thing actually
+  // worth rewarding here. Called once per win from GN.hud.showWin, not
+  // per-mode, so every mode's win screen gets it for free.
+  function winBonusForMistakes(m) {
+    if (m === 0) return 20;
+    if (m === 1) return 10;
+    if (m === 2) return 5;
+    if (m <= 4) return 3;
+    if (m <= 8) return 2;
     return 1;
   }
   function applyWinBonus() {
-    const bonus = Math.round(winBonusForScore(score) * getSelectedDifficulty().xpMult);
+    const bonus = Math.round(winBonusForMistakes(mistakes) * getSelectedDifficulty().xpMult);
     const coins = addCoins(bonus);
     if (GN.shop) GN.shop.refreshWalletDisplay();
     return { bonus, coins };
   }
 
-  // outcome: {type: 'correct'|'wrong'|'partial', cost, partialRatio, coins}
+  // outcome: {type: 'correct'|'wrong'|'partial', points, partialRatio, coins}
+  // Points are always EARNED, never spent — a wrong answer simply pays out
+  // nothing rather than deducting from a shrinking pool. Psychologically,
+  // "the number only ever goes up" reads as encouraging in a way a
+  // draw-down-from-1000 meter doesn't, especially for a learning game where
+  // getting something wrong is a normal, low-stakes part of the process.
   function applyOutcome(outcome) {
-    const cost = outcome.cost != null ? outcome.cost : (outcome.type === 'correct' ? 10 : 50);
+    const points = outcome.points != null ? outcome.points : (outcome.type === 'correct' ? 50 : 0);
     let shieldUsed = false;
     if (outcome.type === 'wrong') {
       mistakes++;
-      score = Math.max(0, score - cost);
       if (currentStreak > 0 && consumeShield()) {
         shieldUsed = true;
         if (GN.hud) GN.hud.showToast('Streak Shield used — your streak is safe!');
@@ -318,7 +324,7 @@
         currentStreak = 0;
       }
     } else if (outcome.type === 'correct' || outcome.type === 'partial') {
-      score = Math.max(0, score - cost);
+      score += points;
       if (outcome.type === 'correct') {
         currentStreak++;
         const progress = loadProgress();
@@ -360,9 +366,9 @@
   }
 
   GN.progression = {
-    MAX_SCORE, DIFFICULTIES, THEMES, SHIELD_PRICE,
+    DIFFICULTIES, THEMES, SHIELD_PRICE,
     reset, getScore, getMistakes, applyOutcome, getCurrentStreak, getBestStreak,
-    winBonusForScore, applyWinBonus,
+    winBonusForMistakes, applyWinBonus,
     getXp, getLevel, getSelectedDifficultyId, getSelectedDifficulty, setSelectedDifficulty,
     xpForLevel, buildPool, pickTarget,
     getCoins, addCoins, spendCoins,

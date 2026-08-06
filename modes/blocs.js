@@ -64,9 +64,9 @@
     const correct = idx === ctx.state.impostor;
     ctx.map.flashCountries([ctx.state.impostor], 'flash-good');
     if (!correct) ctx.map.flashCountries([idx], 'flash-bad');
-    GN.progression.applyOutcome(correct ? { type: 'correct', cost: 10 } : { type: 'wrong', cost: 50 });
+    GN.progression.applyOutcome(correct ? { type: 'correct', points: 50 } : { type: 'wrong' });
     ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
-    ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
+    ctx.hud.updateStat('points', String(GN.progression.getScore()));
     ctx.hud.updateStat('streak', String(GN.progression.getCurrentStreak()));
     // A short delay so the map's flash colors are visible before the
     // overlay covers it, then wait for the player's own "Next round" click
@@ -87,7 +87,7 @@
       ctx.state = { org: null, impostor: null, all: [], inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
       ctx.hud.setStats([
-        { id: 'points', value: GN.progression.MAX_SCORE + ' / ' + GN.progression.MAX_SCORE, label: 'Points', cls: 'stat-points' },
+        { id: 'points', value: '0', label: 'Points', cls: 'stat-points' },
         { id: 'streak', value: String(GN.progression.getCurrentStreak()), label: 'Streak' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);

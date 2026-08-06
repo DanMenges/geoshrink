@@ -88,16 +88,16 @@
     if (!correct) ctx.map.flashCountries([clickedIdx], 'flash-bad');
 
     if (correct) {
-      // cost:0 — Expedition doesn't use the shared 1000-point pool; correct
-      // answers only ever add coins here. Still routed through applyOutcome
-      // so XP, the cross-mode best-streak, and the persistent coin wallet
-      // stay consistent with every other mode. The combo bonus needs the
-      // streak AFTER this answer, which applyOutcome computes internally —
-      // so it's projected here (current + 1) and handed in via outcome.coins,
-      // rather than calling applyOutcome twice.
+      // points:0 — Expedition doesn't use the shared running-points display;
+      // correct answers only ever add coins here. Still routed through
+      // applyOutcome so XP, the cross-mode best-streak, and the persistent
+      // coin wallet stay consistent with every other mode. The combo bonus
+      // needs the streak AFTER this answer, which applyOutcome computes
+      // internally — so it's projected here (current + 1) and handed in via
+      // outcome.coins, rather than calling applyOutcome twice.
       const projectedStreak = GN.progression.getCurrentStreak() + 1;
       const comboBonus = Math.min(projectedStreak - 1, COMBO_CAP) * COMBO_STEP;
-      const outcome = GN.progression.applyOutcome({ type: 'correct', cost: 0, coins: BASE_COINS + comboBonus });
+      const outcome = GN.progression.applyOutcome({ type: 'correct', points: 0, coins: BASE_COINS + comboBonus });
       const streak = outcome.currentStreak;
       const earned = outcome.coinsGain;
       ctx.state.coins += earned;
@@ -118,7 +118,7 @@
         }
       }, 600);
     } else {
-      const outcome = GN.progression.applyOutcome({ type: 'wrong', cost: 0 });
+      const outcome = GN.progression.applyOutcome({ type: 'wrong' });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
       ctx.hud.updateStat('streak', String(outcome.currentStreak));
       ctx.state.supplies--;
