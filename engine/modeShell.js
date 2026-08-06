@@ -3,6 +3,7 @@
 
   const modes = {};
   function registerMode(id, def) { modes[id] = def; }
+  function hasMode(id) { return Object.prototype.hasOwnProperty.call(modes, id); }
 
   let current = null;
   let roundId = 0;
@@ -69,7 +70,7 @@
   }
 
   GN.modeShell = {
-    registerMode, start, restartCurrent, stop, scheduleTimeout, bumpRound,
+    registerMode, hasMode, start, restartCurrent, stop, scheduleTimeout, bumpRound,
     get current() { return current; },
   };
 })();

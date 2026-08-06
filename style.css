@@ -392,11 +392,6 @@ svg#map { display: block; width: 100%; height: 100%; }
   background: var(--surface-1);
 }
 
-.choice-btn { min-width: 84px; justify-content: center; }
-.choice-btn:disabled { cursor: default; opacity: 0.7; }
-.choice-btn.choice-correct { background: var(--good); border-color: var(--good); color: #ffffff; }
-.choice-btn.choice-wrong { background: var(--critical); border-color: var(--critical); color: #ffffff; }
-
 .switch-label {
   display: flex;
   align-items: center;
@@ -697,43 +692,50 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .xp-label { font-size: 10px; color: var(--text-muted); }
 .best-streak { font-size: 10.5px; color: #b9a6ff; font-weight: 700; }
 
+/* Difficulty picker and the Daily/Atlas/Multiplayer callouts are the "hero"
+   choices on Home — deliberately sized and colored to read as more dominant
+   than the mode grid below, which is the long list of individual games. */
 .tier-picker {
   display: flex;
-  gap: 7px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .callout-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 24px;
 }
 .daily-callout {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1 1 260px;
+  gap: 16px;
+  flex: 1 1 280px;
   text-align: left;
   font: inherit;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--group-a) 12%, var(--surface-1)), var(--surface-1));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--group-a) 14%, var(--surface-1)), var(--surface-1));
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 16px;
+  border-radius: 16px;
+  padding: 20px 24px;
   box-shadow: var(--shadow);
   cursor: pointer;
   color: var(--group-a);
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
-.atlas-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--guessable) 12%, var(--surface-1)), var(--surface-1)); color: var(--guessable); }
-.daily-callout-text { display: flex; flex-direction: column; gap: 2px; }
-.daily-callout-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.daily-callout-sub { font-size: 12px; color: var(--text-secondary); }
+.daily-callout:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(11,11,11,0.12); }
+.daily-callout svg { width: 30px; height: 30px; flex: none; }
+.atlas-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--guessable) 14%, var(--surface-1)), var(--surface-1)); color: var(--guessable); }
+.mp-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--good) 14%, var(--surface-1)), var(--surface-1)); color: var(--good); }
+.daily-callout-text { display: flex; flex-direction: column; gap: 3px; }
+.daily-callout-title { font-size: 19px; font-weight: 800; color: var(--text-primary); }
+.daily-callout-sub { font-size: 13.5px; color: var(--text-secondary); }
 .tier-chip {
   font: inherit;
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 8px 14px;
+  padding: 13px 26px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-1);
@@ -742,11 +744,16 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 }
 .tier-chip.active { background: var(--group-a); border-color: var(--group-a); color: #ffffff; }
 
+/* Mode grid: a fixed 2-row x 4-column layout on desktop (the order in
+   MODE_CARDS is deliberate, not auto-flowed) — narrower screens step down
+   to 2 columns, then 1 (see the responsive block at the end of this file).
+   Cards are visually secondary to the callouts above (smaller type, no
+   gradient), even though their tap targets are generously sized. */
 .mode-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
 }
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -756,23 +763,68 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   text-align: left;
   font: inherit;
   background: var(--surface-1);
   border: 1px solid var(--border);
   animation: cardIn 380ms ease both;
-  border-radius: 11px;
-  padding: 12px 14px;
+  border-radius: 13px;
+  padding: 18px 18px;
+  min-height: 148px;
   box-shadow: var(--shadow);
   cursor: pointer;
   color: var(--text-primary);
   transition: transform 140ms ease, box-shadow 140ms ease;
 }
 .mode-card:hover { transform: translateY(-2px); }
-.mode-icon { width: 22px; height: 22px; color: var(--group-a); }
-.mode-title { font-size: 14px; font-weight: 700; }
-.mode-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.35; }
+.mode-icon { width: 27px; height: 27px; color: var(--group-a); }
+.mode-title { font-size: 15.5px; font-weight: 700; }
+.mode-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
+
+/* The big showcase progression readout, distinct from the compact
+   top-right level-badge (that one's the always-visible glance version;
+   this one's the "attractive" one worth stopping to look at). The 5-dot
+   tier tracker visualizes the every-5-levels milestone cadence directly,
+   which a single per-level XP bar can't — that bar only ever shows
+   progress within the CURRENT level. */
+.progression-banner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--guessable) 14%, var(--surface-1)), color-mix(in srgb, var(--group-a) 8%, var(--surface-1)));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+.progression-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 3px solid var(--guessable);
+  box-shadow: 0 2px 8px rgba(11,11,11,0.12);
+}
+.progression-badge-num { font-size: 27px; font-weight: 800; color: var(--guessable); line-height: 1.1; }
+.progression-badge-word { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.progression-body { flex: 1; min-width: 0; }
+.progression-xp-row { margin-bottom: 8px; }
+.progression-xp-label { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.progression-track { height: 12px; border-radius: 999px; background: var(--eliminated-fill); overflow: hidden; }
+.progression-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--group-a), var(--guessable)); width: 0%; transition: width 600ms ease; }
+.progression-tier { display: flex; align-items: center; gap: 8px; margin-top: 13px; }
+.progression-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--eliminated-fill); border: 1px solid var(--eliminated-stroke); flex: none; }
+.progression-dot.filled { background: var(--guessable); border-color: var(--guessable); }
+.progression-dot.milestone { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); }
+.progression-dot.milestone.reached { color: #c9902a; }
+.progression-tier-label { font-size: 11.5px; color: var(--text-muted); margin-left: 4px; }
 
 .home-footer {
   display: flex;
@@ -786,8 +838,6 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .home-footer-note { font-size: 11.5px; color: var(--text-muted); }
 
 /* multiplayer -------------------------------------------------------------- */
-.mp-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--good) 12%, var(--surface-1)), var(--surface-1)); color: var(--good); }
-
 .multiplayer-screen {
   position: absolute;
   inset: 0;
@@ -890,6 +940,9 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .mp-player-status.submitted { color: var(--good); }
 
 /* responsive ------------------------------------------------------------- */
+@media (max-width: 1000px) {
+  .mode-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 640px) {
   .home-inner { padding: 16px 14px 32px; }
   .level-badge { min-width: 0; max-width: none; }

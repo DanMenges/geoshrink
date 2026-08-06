@@ -16,6 +16,13 @@
     directModeAtLoad = '';
     history.replaceState(null, '', location.pathname + location.search);
     GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Flag Frenzy.');
+  } else if (directModeAtLoad && !GN.modeShell.hasMode(directModeAtLoad)) {
+    // A link to a mode that's been removed since (e.g. an old #compass
+    // bookmark) would otherwise throw inside modeShell.start() below —
+    // fail gracefully back to Home instead.
+    directModeAtLoad = '';
+    history.replaceState(null, '', location.pathname + location.search);
+    GN.hud.showToast("That game mode isn't available anymore.");
   }
   if (!directModeAtLoad) GN.home.show();
 

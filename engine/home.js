@@ -14,8 +14,6 @@
     flags: '<path d="M6 21V4"/><path d="M6 5h12l-3 3.5L18 12H6"/>',
     // a capitol-style building
     capitals: '<path d="M4 20h16"/><path d="M5 20V10M9 20V10M12 20V10M15 20V10M19 20V10"/><path d="M3 10 12 4l9 6"/>',
-    // compass rose
-    compass: '<circle cx="12" cy="12" r="9"/><path d="M12 6.5 14 12l-2 5.5L10 12z"/>',
     // three linked circles — a bloc/alliance
     blocs: '<circle cx="8" cy="9" r="3.4"/><circle cx="16" cy="9" r="3.4"/><circle cx="12" cy="16" r="3.4"/>',
     // dashed route with a pin at the end
@@ -25,20 +23,48 @@
     return '<svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
   }
 
+  // Fixed 2-row x 4-column reading order (see .mode-grid in style.css) —
+  // not alphabetical or auto-flowed, so keep new modes' placement deliberate.
   const MODE_CARDS = [
-    { id: 'narrow', title: 'Narrow Down', desc: 'The world splits in two each round — narrow down to the target country, or gamble on a direct guess.' },
+    { id: 'narrow', title: 'Geo Shrink', desc: 'The world splits in two each round — narrow down to the target country, or gamble on a direct guess.' },
+    { id: 'expedition', title: 'Expedition', desc: 'Travel a random border-by-border path from an origin to a destination — click each named country to press on and collect points.' },
+    { id: 'blocs', title: 'Bloc Bingo', desc: 'Six countries, one doesn’t belong — spot the odd one out of the alliance.' },
     { id: 'fog', title: 'Fog of War', desc: 'Explore outward from a home country. Wrong guesses cost nothing, and your progress is saved as you go.' },
-    { id: 'neighbor', title: 'Neighbor Match', desc: 'Click every country that shares a border with the reference country.' },
-    { id: 'size', title: 'Size Showdown', desc: 'Quick head-to-head guesses: which country has the bigger land area?' },
     { id: 'flags', title: 'Flag Frenzy', desc: 'Identify the country from its flag.' },
     { id: 'capitals', title: 'Capital Match', desc: 'Match the capital city to its country.' },
-    { id: 'compass', title: 'Compass Quiz', desc: 'Is it north, south, east, or west of the reference country?' },
-    { id: 'blocs', title: 'Bloc Bingo', desc: 'Six countries, one doesn’t belong — spot the odd one out of the alliance.' },
-    { id: 'expedition', title: 'Expedition', desc: 'Travel a random border-by-border path from an origin to a destination — click each named country to press on and collect points.' },
+    { id: 'neighbor', title: 'Neighbor Match', desc: 'Click every country that shares a border with the reference country.' },
+    { id: 'size', title: 'Size Showdown', desc: 'Quick head-to-head guesses: which country has the bigger land area?' },
   ];
 
   const homeScreen = document.getElementById('home-screen');
   const boardEl = document.querySelector('.board');
+
+  const STAR_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 2.5l2.9 6.3 6.7.7-5 4.7 1.4 6.8L12 17.6l-6 3.4 1.4-6.8-5-4.7 6.7-.7z"/></svg>';
+
+  // Levels divisible by 5 are milestone unlocks (content for those comes
+  // later — this just visualizes the cadence: a 5-dot tracker for where the
+  // player sits within the current group of 5 levels, distinct from the XP
+  // bar above it, which only ever shows progress within the single current
+  // level and can't represent "how close to the next milestone" on its own.
+  function renderProgressionTier(level) {
+    const tierStart = Math.floor((level - 1) / 5) * 5 + 1;
+    const posInTier = level - tierStart + 1; // 1..5
+    const milestoneLevel = tierStart + 4;
+    let dots = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i === 5) {
+        const reached = posInTier >= 5;
+        dots += '<span class="progression-dot milestone' + (reached ? ' reached' : '') + '" title="Level ' + milestoneLevel + ' milestone">' + STAR_SVG + '</span>';
+      } else {
+        dots += '<span class="progression-dot' + (posInTier >= i ? ' filled' : '') + '"></span>';
+      }
+    }
+    const label = posInTier >= 5
+      ? 'Milestone reached at Level ' + milestoneLevel + '!'
+      : 'Milestone at Level ' + milestoneLevel + ' — ' + (5 - posInTier) + ' to go';
+    const tierEl = document.getElementById('progression-tier');
+    if (tierEl) tierEl.innerHTML = dots + '<span class="progression-tier-label">' + label + '</span>';
+  }
 
   function renderLevelBadge() {
     const xp = GN.progression.getXp();
@@ -47,10 +73,16 @@
     const nextLevelXp = GN.progression.xpForLevel(level + 1);
     const span = Math.max(1, nextLevelXp - thisLevelXp);
     const into = xp - thisLevelXp;
+    const fillPct = Math.round(100 * Math.max(0, Math.min(1, into / span)));
     document.getElementById('home-level').textContent = level;
-    document.getElementById('home-xp-fill').style.width = Math.round(100 * Math.max(0, Math.min(1, into / span))) + '%';
+    document.getElementById('home-xp-fill').style.width = fillPct + '%';
     document.getElementById('home-xp-label').textContent = into + ' / ' + span + ' XP to level ' + (level + 1);
     document.getElementById('home-best-streak').textContent = 'Best streak: ' + GN.progression.getBestStreak();
+
+    document.getElementById('prog-level-num').textContent = level;
+    document.getElementById('prog-fill').style.width = fillPct + '%';
+    document.getElementById('prog-xp-label').textContent = into + ' / ' + span + ' XP to Level ' + (level + 1);
+    renderProgressionTier(level);
   }
 
   function renderDifficultyPicker() {

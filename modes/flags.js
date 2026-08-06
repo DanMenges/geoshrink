@@ -35,8 +35,14 @@
     ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
     ctx.hud.updateStat('points', GN.progression.getScore() + ' / ' + GN.progression.MAX_SCORE);
     ctx.hud.updateStat('streak', String(GN.progression.getCurrentStreak()));
-    ctx.hud.showToast((correct ? 'Correct! ' : '') + 'That flag belongs to ' + ctx.data.names[ctx.state.targetIdx] + '.');
-    ctx.scheduleTimeout(() => nextRound(ctx), 1400);
+    ctx.scheduleTimeout(() => {
+      ctx.hud.showRoundResult({
+        correct,
+        title: correct ? 'Correct!' : 'Not quite',
+        sub: 'That flag belongs to ' + ctx.data.names[ctx.state.targetIdx] + '.',
+        onNext: () => nextRound(ctx),
+      });
+    }, 550);
   }
 
   const mode = {
