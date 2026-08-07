@@ -985,6 +985,42 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .mp-result-name { flex: 1; font-weight: 700; color: var(--text-primary); }
 .mp-result-score { font-weight: 800; color: var(--guessable); font-variant-numeric: tabular-nums; }
 
+/* between-rounds intermission overlay ------------------------------------ */
+.mp-round-summary-card {
+  width: min(92vw, 460px);
+  max-height: min(86vh, 620px);
+  overflow-y: auto;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+.mp-round-summary-card h2 { margin: 0; font-size: 18px; color: var(--text-primary); text-align: center; }
+.mp-round-summary-list { display: flex; flex-direction: column; gap: 8px; }
+.mp-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+.mp-summary-row.me { border-color: var(--group-a); }
+.mp-summary-name { flex: 1; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-summary-round-score { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.mp-summary-total { font-weight: 800; color: var(--guessable); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mp-summary-ready { width: 18px; text-align: center; color: var(--text-muted); flex: none; }
+.mp-summary-ready.ready { color: var(--good); }
+.mp-round-summary-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mp-round-summary-timer { font-size: 12px; color: var(--text-muted); }
+.mp-round-summary-timer b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
 /* live-match scoreboard — a dedicated floating panel, not the single-player
    #stats-container (built for one player's stat row, not a multi-player
    roster with per-player submitted status). */

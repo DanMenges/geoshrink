@@ -1,7 +1,7 @@
 (function () {
   const GN = window.GN = window.GN || {};
 
-  const STEP_MS = 15000;
+  const STEP_MS = 30000;
   // Not submitting anything costs exactly as much as an honest wrong guess —
   // deliberately not a cheaper "safe" option. A separate, lighter timeout
   // cost would let a player passively coast through a step for less than
@@ -10,11 +10,16 @@
   const TIMEOUT_COST = 250;
   const CORRECT_STEP_COST = 50;
   const WRONG_STEP_COST = 250;
+  // How long players get to review a round's results before the next one
+  // starts automatically — same idea as STEP_MS's timeout, just for the
+  // between-rounds pause instead of a single narrowing step.
+  const ROUND_SUMMARY_MS = 30000;
 
   const mpScreen = document.getElementById('multiplayer-screen');
   const mpInner = document.getElementById('mp-inner');
   const boardEl = document.querySelector('.board');
   const scoreboardEl = document.getElementById('mp-scoreboard');
+  const summaryOverlay = document.getElementById('mp-round-summary-overlay');
 
   // Module-level (not per-mode-instance) so lobby state survives the
   // lobby -> live-match -> results transitions cleanly, per the plan's
@@ -25,6 +30,7 @@
     matchCtx: null, path: null, lastRound: -1, lastStep: -1,
     guessMode: false, mySubmitted: false, resolving: false,
     countdownTimer: null, hostTimer: null,
+    lastSummaryRound: -1, readySubmitted: false,
   };
 
   function escapeHtml(s) {
@@ -155,7 +161,8 @@
     clearInterval(mp.hostTimer);
     clearInterval(mp.countdownTimer);
     if (mp.matchCtx) { GN.modeShell.stop(); boardEl.classList.add('hidden'); }
-    Object.assign(mp, { roomCode: null, room: null, isHost: false, matchCtx: null, lastRound: -1, lastStep: -1 });
+    hideRoundSummaryOverlay();
+    Object.assign(mp, { roomCode: null, room: null, isHost: false, matchCtx: null, lastRound: -1, lastStep: -1, lastSummaryRound: -1, readySubmitted: false });
     showMenu();
   }
 
@@ -176,7 +183,7 @@
       '<button class="hud-btn" id="mp-results-done">Back to menu</button></div>';
     document.getElementById('mp-results-done').addEventListener('click', () => {
       GN.multiplayer.unsubscribeRoom();
-      Object.assign(mp, { roomCode: null, room: null, isHost: false, matchCtx: null, lastRound: -1, lastStep: -1 });
+      Object.assign(mp, { roomCode: null, room: null, isHost: false, matchCtx: null, lastRound: -1, lastStep: -1, lastSummaryRound: -1, readySubmitted: false });
       showMenu();
     });
   }
@@ -243,7 +250,7 @@
     }).join('');
     const stepLabel = 'Round ' + room.currentRound + ' / 5 — Step ' + (room.currentStep + 1) + (mp.path ? ' / ' + mp.path.length : '');
     scoreboardEl.innerHTML =
-      '<div class="mp-scoreboard-head"><span>' + stepLabel + '</span><span id="mp-timer">15s</span></div>' + rows;
+      '<div class="mp-scoreboard-head"><span>' + stepLabel + '</span><span id="mp-timer">30s</span></div>' + rows;
   }
 
   function renderMatchState(ctx, room) {
@@ -260,6 +267,72 @@
       startCountdown(room);
     }
     renderScoreboard(room);
+  }
+
+  // --- between-rounds intermission ----------------------------------------
+  // A round ending doesn't roll straight into the next one — players get a
+  // beat to actually look at what happened, with an escape hatch (everyone
+  // hits Next Round) so a fast group isn't stuck waiting out the full timer.
+
+  function hideRoundSummaryOverlay() {
+    summaryOverlay.classList.remove('show');
+  }
+
+  function startSummaryCountdown(room) {
+    clearInterval(mp.countdownTimer);
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((room.roundSummaryDeadline - Date.now()) / 1000));
+      const el = document.getElementById('mp-round-summary-timer');
+      if (el) el.textContent = remaining + 's';
+    };
+    tick();
+    mp.countdownTimer = setInterval(tick, 250);
+  }
+
+  function renderRoundSummary(room) {
+    if (room.currentRound !== mp.lastSummaryRound) {
+      mp.lastSummaryRound = room.currentRound;
+      mp.readySubmitted = false;
+      startSummaryCountdown(room);
+    }
+    const myUid = GN.multiplayer.getUid();
+    const roundScores = room.roundScores || {};
+    const ready = room.readyForNext || {};
+    // Ranked by running total, same uid tiebreak as everywhere else this
+    // matters — Firestore doesn't guarantee player map key order matches
+    // across clients.
+    const rows = Object.keys(room.players || {}).map((uid) => ({
+      uid,
+      name: room.players[uid].name,
+      roundScore: (roundScores[uid] && roundScores[uid][room.currentRound]) || 0,
+      total: (room.scores && room.scores[uid]) || 0,
+      isReady: !!ready[uid],
+    })).sort((a, b) => b.total - a.total || a.uid.localeCompare(b.uid));
+
+    document.getElementById('mp-round-summary-title').textContent = 'Round ' + room.currentRound + ' complete!';
+    document.getElementById('mp-round-summary-list').innerHTML = rows.map((r) =>
+      '<div class="mp-summary-row' + (r.uid === myUid ? ' me' : '') + '">' +
+      '<span class="mp-summary-name">' + escapeHtml(r.name) + '</span>' +
+      '<span class="mp-summary-round-score">' + r.roundScore + ' this round</span>' +
+      '<span class="mp-summary-total">' + r.total + ' total</span>' +
+      '<span class="mp-summary-ready' + (r.isReady ? ' ready' : '') + '">' + (r.isReady ? '✓' : '…') + '</span>' +
+      '</div>'
+    ).join('');
+
+    const btn = document.getElementById('mp-round-summary-ready-btn');
+    btn.disabled = mp.readySubmitted;
+    btn.textContent = mp.readySubmitted ? 'Waiting for others…' : 'Next Round';
+
+    summaryOverlay.classList.add('show');
+  }
+
+  function markReadyForNext() {
+    if (mp.readySubmitted || !mp.room || mp.room.status !== 'round-summary') return;
+    mp.readySubmitted = true;
+    const uid = GN.multiplayer.getUid();
+    GN.multiplayer.updateRoom(mp.roomCode, { ['readyForNext.' + uid]: true })
+      .catch((err) => GN.hud.showToast('Error: ' + err.message));
+    renderRoundSummary(mp.room); // immediate own-checkmark feedback, don't wait for the round-trip snapshot
   }
 
   function submitChoice(choice) {
@@ -290,15 +363,17 @@
       mp.matchCtx = ctx;
       mp.lastRound = -1;
       mp.lastStep = -1;
+      mp.lastSummaryRound = -1;
       mp.guessMode = false;
       mp.mySubmitted = false;
+      mp.readySubmitted = false;
       ctx.hud.setStats([]);
       ctx.hud.setLegend(
         '<span class="a"><span class="swatch"></span>Region A</span>' +
         '<span class="b"><span class="swatch"></span>Region B</span>' +
         '<span class="elim"><span class="swatch"></span>Not in play</span>'
       );
-      ctx.hud.setHint('Click a region to narrow, or switch to Guess mode to name the country directly. 15 seconds per step.');
+      ctx.hud.setHint('Click a region to narrow, or switch to Guess mode to name the country directly. 30 seconds per step.');
       ctx.hud.setPanel(
         '<label class="switch-label" id="mp-guess-label">' +
         '<span class="switch"><input type="checkbox" id="mp-guess-toggle"><span class="switch-track"><span class="switch-thumb"></span></span></span>' +
@@ -310,7 +385,10 @@
       });
       if (mp.room) renderMatchState(ctx, mp.room);
       if (mp.isHost) {
-        mp.hostTimer = setInterval(() => maybeResolveStep(mp.room), 1000);
+        mp.hostTimer = setInterval(() => {
+          maybeResolveStep(mp.room);
+          maybeResolveRoundSummary(mp.room);
+        }, 1000);
       }
     },
     teardown() {
@@ -321,6 +399,7 @@
         mp.matchCtx.hud.setLegend('');
       }
       scoreboardEl.innerHTML = '';
+      hideRoundSummaryOverlay();
       mp.matchCtx = null;
     },
     onMapClick,
@@ -386,16 +465,45 @@
         updates.status = 'finished';
         updates.currentRoundScores = {};
       } else {
-        const pool = GN.progression.buildPool(GN.data.playableIndices, room.difficulty);
-        const target = GN.progression.pickTarget(pool, room.difficulty);
-        updates.currentRound = nextRound;
-        updates.currentStep = 0;
-        updates.stepDeadline = Date.now() + STEP_MS;
-        updates.currentRoundScores = freshRoundScores(players);
-        updates['rounds.' + nextRound] = { pool, target };
+        // Pause for review instead of rolling straight into the next round —
+        // maybeResolveRoundSummary() below generates it once everyone's
+        // ready or the intermission timer runs out. room.currentRound is
+        // deliberately NOT advanced yet, so the summary screen (and its
+        // roundScores[uid][currentRound] lookup) still refers to the round
+        // that just ended.
+        updates.status = 'round-summary';
+        updates.roundSummaryDeadline = Date.now() + ROUND_SUMMARY_MS;
+        updates.readyForNext = {};
       }
     }
     GN.multiplayer.updateRoom(mp.roomCode, updates)
+      .catch((err) => GN.hud.showToast('Multiplayer sync error: ' + err.message))
+      .finally(() => { mp.resolving = false; });
+  }
+
+  function maybeResolveRoundSummary(room) {
+    if (!room || room.status !== 'round-summary' || !mp.isHost || mp.resolving) return;
+    const players = room.players || {};
+    const connectedUids = Object.keys(players).filter((uid) => players[uid].connected !== false);
+    const ready = room.readyForNext || {};
+    const allReady = connectedUids.length > 0 && connectedUids.every((uid) => ready[uid]);
+    const deadlinePassed = Date.now() >= (room.roundSummaryDeadline || 0);
+    if (!allReady && !deadlinePassed) return;
+
+    mp.resolving = true;
+    const nextRound = room.currentRound + 1;
+    const pool = GN.progression.buildPool(GN.data.playableIndices, room.difficulty);
+    const target = GN.progression.pickTarget(pool, room.difficulty);
+    GN.multiplayer.updateRoom(mp.roomCode, {
+      status: 'active',
+      currentRound: nextRound,
+      currentStep: 0,
+      stepDeadline: Date.now() + STEP_MS,
+      hostHeartbeatAt: Date.now(),
+      currentRoundScores: freshRoundScores(players),
+      readyForNext: {},
+      ['rounds.' + nextRound]: { pool, target },
+    })
       .catch((err) => GN.hud.showToast('Multiplayer sync error: ' + err.message))
       .finally(() => { mp.resolving = false; });
   }
@@ -415,14 +523,21 @@
       if (!mp.matchCtx) {
         enterMatchView();
       } else {
+        hideRoundSummaryOverlay(); // in case we just rolled over from round-summary
         renderMatchState(mp.matchCtx, room);
       }
       if (mp.isHost) maybeResolveStep(room);
+    } else if (room.status === 'round-summary') {
+      if (!mp.matchCtx) enterMatchView(); // defensive: shouldn't normally happen mid-match
+      renderRoundSummary(room);
+      if (mp.isHost) maybeResolveRoundSummary(room);
     } else if (room.status === 'finished') {
       if (mp.matchCtx) leaveMatchView();
       renderResults(room);
     }
   }
+
+  document.getElementById('mp-round-summary-ready-btn').addEventListener('click', markReadyForNext);
 
   document.getElementById('multiplayer-callout').addEventListener('click', () => {
     if (!GN.data) { GN.hud.showToast('Still loading the map — one moment…'); return; }
