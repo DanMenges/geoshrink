@@ -1,14 +1,15 @@
 (function () {
   const GN = window.GN = window.GN || {};
 
-  // Difficulty is a freely-chosen preference, not an XP-gated unlock (the
-  // old 4-tier system conflated the two). Reward scaling (xpMult) carries
-  // over from that system — Hard still pays out more XP/coins — but nothing
-  // is locked by player level anymore.
+  // Medium/Hard are level-gated unlocks (Easy is always available) — a
+  // simple two-threshold gate, not the old fully level-gated 4-tier system.
+  // xpMult is deliberately exact multiples of Easy's 1x: Medium pays out
+  // 50% more XP/coins, Hard pays out 100% more — both are shown directly on
+  // the Home difficulty picker so the tradeoff is explicit up front.
   const DIFFICULTIES = [
-    { id: 'easy', label: 'Easy', poolSize: 40, xpMult: 1 },
-    { id: 'medium', label: 'Medium', poolSize: 100, xpMult: 1.5 },
-    { id: 'hard', label: 'Hard', poolSize: null, xpMult: 2.2 }, // null = full world; obscurity bias applied at pick time instead of a hard cutoff
+    { id: 'easy', label: 'Easy', poolSize: 40, xpMult: 1, unlockLevel: 1 },
+    { id: 'medium', label: 'Medium', poolSize: 100, xpMult: 1.5, unlockLevel: 5 },
+    { id: 'hard', label: 'Hard', poolSize: null, xpMult: 2, unlockLevel: 10 }, // null = full world; obscurity bias applied at pick time instead of a hard cutoff
   ];
   // Existing saves may have `progress.tier` set to an old tier id — map
   // those forward rather than silently resetting anyone to Easy.
@@ -74,7 +75,7 @@
       // Starting balance is generous on purpose — it lets a new player open
       // the shop and actually try a purchase right away instead of grinding
       // toward it blind.
-      data.progress = { xp: 0, tier: 'easy', coins: 1000, shields: 0, ownedThemes: FREE_THEME_IDS.slice(), theme: 'classic', recentTargets: [], showFlags: true, passports: {}, repairTools: 0 };
+      data.progress = { xp: 0, tier: 'easy', coins: 1000, shields: 0, ownedThemes: FREE_THEME_IDS.slice(), theme: 'classic', recentTargets: [], showFlags: true, passports: {}, repairTools: 0, expeditionRecent: [] };
     }
     if (data.progress.coins == null) data.progress.coins = 1000;
     if (data.progress.shields == null) data.progress.shields = 0;
@@ -83,6 +84,7 @@
     if (!data.progress.ownedThemes) data.progress.ownedThemes = [];
     if (!data.progress.passports) data.progress.passports = {};
     if (data.progress.repairTools == null) data.progress.repairTools = 0;
+    if (!data.progress.expeditionRecent) data.progress.expeditionRecent = [];
     // Free themes are granted unconditionally, including retroactively to
     // existing saves — nothing with price 0 should ever need "buying".
     FREE_THEME_IDS.forEach((id) => {
@@ -109,16 +111,30 @@
 
   function getXp() { return loadProgress().xp; }
   function getLevel() { return levelForXp(getXp()); }
+  function difficultyById(id) {
+    return DIFFICULTIES.find((d) => d.id === id);
+  }
+  function isDifficultyUnlocked(id) {
+    const diff = difficultyById(id);
+    return !!diff && getLevel() >= (diff.unlockLevel || 1);
+  }
+  // If the stored preference is a difficulty the player hasn't reached the
+  // level for yet (e.g. it was picked back when nothing was level-gated),
+  // this reads as Easy rather than silently granting the locked tier — the
+  // stored value itself is left untouched, so it just resumes automatically
+  // once they actually reach the required level.
   function getSelectedDifficultyId() {
     const progress = loadProgress();
     const id = LEGACY_TIER_MAP[progress.tier] || progress.tier;
-    return DIFFICULTIES.some((d) => d.id === id) ? id : 'easy';
+    const resolved = DIFFICULTIES.some((d) => d.id === id) ? id : 'easy';
+    return isDifficultyUnlocked(resolved) ? resolved : 'easy';
   }
   function getSelectedDifficulty() {
     return DIFFICULTIES.find((d) => d.id === getSelectedDifficultyId()) || DIFFICULTIES[0];
   }
   function setSelectedDifficulty(id) {
     if (!DIFFICULTIES.some((d) => d.id === id)) return false;
+    if (!isDifficultyUnlocked(id)) return false;
     const progress = loadProgress();
     progress.tier = id;
     saveProgress(progress);
@@ -320,10 +336,6 @@
     return result;
   }
 
-  function difficultyById(id) {
-    return DIFFICULTIES.find((d) => d.id === id);
-  }
-
   // Builds a FRESH candidate pool for a new game session — replaces the old
   // scopePool()'s fixed deterministic top-N-by-population slice, which
   // returned the exact same set every single game. Modes for which pool
@@ -355,6 +367,23 @@
     progress.recentTargets = [picked, ...(progress.recentTargets || [])].slice(0, cap);
     saveProgress(progress);
     return picked;
+  }
+
+  // Expedition picks TWO endpoints (origin + destination) per round from a
+  // graph-connectivity-constrained candidate set, not a single weighted
+  // target — so it keeps its own small recency list rather than sharing
+  // recentTargets above (mixing the two would tie Expedition's exclusion to
+  // unrelated cross-mode single-target picks). Kept separate and simple:
+  // pure recency exclusion, no difficulty/familiarity weighting.
+  const EXPEDITION_RECENT_CAP = 16;
+  function getExpeditionRecent() { return loadProgress().expeditionRecent || []; }
+  function recordExpeditionEndpoints(a, b) {
+    const progress = loadProgress();
+    const seen = new Set();
+    progress.expeditionRecent = [a, b, ...(progress.expeditionRecent || [])]
+      .filter((i) => (seen.has(i) ? false : (seen.add(i), true)))
+      .slice(0, EXPEDITION_RECENT_CAP);
+    saveProgress(progress);
   }
 
   // --- per-round session state ----------------------------------------------
@@ -465,7 +494,8 @@
     reset, getScore, getMistakes, applyOutcome, getCurrentStreak, getBestStreak,
     winBonusForMistakes, applyWinBonus,
     getXp, getLevel, addXp, getSelectedDifficultyId, getSelectedDifficulty, setSelectedDifficulty,
-    xpForLevel, buildPool, pickTarget,
+    isDifficultyUnlocked,
+    xpForLevel, buildPool, pickTarget, getExpeditionRecent, recordExpeditionEndpoints,
     getCoins, addCoins, spendCoins,
     getShieldCount, buyShield, consumeShield,
     getRepairToolCount, useRepairTool,

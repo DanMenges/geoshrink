@@ -35,20 +35,33 @@
   // exactly the desired length (especially for the longer tiers — most
   // shortest paths in this graph are well under 20 hops), so this searches
   // many random start/end pairs and keeps whichever comes closest.
+  //
+  // Candidates are drawn from the component minus recently-used endpoints
+  // (GN.progression.getExpeditionRecent) rather than the raw component —
+  // plain Math.random() over the same fixed pool every round meant the same
+  // handful of countries kept resurfacing as origin/destination across
+  // consecutive rounds. Falls back to the full component if the exclusion
+  // would leave too little to search from.
   function pickRoute(ctx, desiredLegs) {
     const component = ctx.state.component;
+    const recent = new Set(GN.progression.getExpeditionRecent());
+    let candidates = component.filter((i) => !recent.has(i));
+    if (candidates.length < 2) candidates = component;
+
     let best = null, bestDiff = Infinity;
     for (let tries = 0; tries < 60; tries++) {
-      const start = component[Math.floor(Math.random() * component.length)];
+      const start = candidates[Math.floor(Math.random() * candidates.length)];
       let end = start;
-      while (end === start) end = component[Math.floor(Math.random() * component.length)];
+      while (end === start) end = candidates[Math.floor(Math.random() * candidates.length)];
       const route = GN.graph.bfsShortestPath(ctx.data.neighbors, start, end);
       if (!route) continue;
       const diff = Math.abs((route.length - 1) - desiredLegs);
       if (diff < bestDiff) { bestDiff = diff; best = route; }
       if (diff === 0) break;
     }
-    return best || [component[0]];
+    const route = best || [component[0]];
+    GN.progression.recordExpeditionEndpoints(route[0], route[route.length - 1]);
+    return route;
   }
 
   function repaintMap(ctx) {

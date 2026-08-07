@@ -847,17 +847,27 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .daily-callout-hint { font-size: 12.5px; font-weight: 700; color: var(--group-a); }
 .daily-callout-sub { font-size: 13.5px; color: var(--text-secondary); }
 .tier-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  padding: 13px 26px;
-  border-radius: 999px;
+  padding: 10px 24px;
+  border-radius: 18px;
   border: 1px solid var(--border);
   background: var(--surface-1);
   color: var(--text-secondary);
   cursor: pointer;
+  text-align: center;
 }
+.tier-chip-label { font-size: 15px; font-weight: 700; }
+.tier-chip-caption { font-size: 10.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.01em; }
 .tier-chip.active { background: var(--group-a); border-color: var(--group-a); color: #ffffff; }
+.tier-chip.active .tier-chip-caption { color: rgba(255,255,255,0.85); }
+/* Locked stays clickable (see engine/home.js) so tapping it explains why via
+   a toast, rather than a native-disabled button that just does nothing. */
+.tier-chip.locked { opacity: 0.6; }
+.tier-chip.locked .tier-chip-caption { color: var(--critical); }
 
 /* Mode grid: a fixed 2-row x 4-column layout on desktop (the order in
    MODE_CARDS is deliberate, not auto-flowed) — narrower screens step down

@@ -87,13 +87,28 @@
 
   function renderDifficultyPicker() {
     const selected = GN.progression.getSelectedDifficultyId();
-    const html = GN.progression.DIFFICULTIES.map((d) =>
-      '<button class="tier-chip' + (d.id === selected ? ' active' : '') + '" data-difficulty="' + d.id + '">' + d.label + '</button>'
-    ).join('');
+    const html = GN.progression.DIFFICULTIES.map((d) => {
+      const unlocked = GN.progression.isDifficultyUnlocked(d.id);
+      // Easy has neither a lock nor a bonus to mention — the caption is only
+      // shown for Medium/Hard, where there's actually a tradeoff to explain.
+      let caption = '';
+      if (!unlocked) caption = 'Unlock at Level ' + d.unlockLevel;
+      else if (d.xpMult > 1) caption = '+' + Math.round((d.xpMult - 1) * 100) + '% XP/Coins';
+      const captionHtml = caption ? '<span class="tier-chip-caption">' + caption + '</span>' : '';
+      return '<button class="tier-chip' + (d.id === selected ? ' active' : '') + (unlocked ? '' : ' locked') + '" data-difficulty="' + d.id + '">' +
+        '<span class="tier-chip-label">' + d.label + '</span>' + captionHtml +
+        '</button>';
+    }).join('');
     document.getElementById('difficulty-picker').innerHTML = html;
     document.querySelectorAll('#difficulty-picker .tier-chip').forEach((btn) => {
       btn.addEventListener('click', () => {
-        GN.progression.setSelectedDifficulty(btn.getAttribute('data-difficulty'));
+        const id = btn.getAttribute('data-difficulty');
+        if (!GN.progression.isDifficultyUnlocked(id)) {
+          const d = GN.progression.DIFFICULTIES.find((x) => x.id === id);
+          GN.hud.showToast('Reach Level ' + (d ? d.unlockLevel : '?') + ' to unlock ' + (d ? d.label : 'this') + ' difficulty.');
+          return;
+        }
+        GN.progression.setSelectedDifficulty(id);
         renderDifficultyPicker();
       });
     });
