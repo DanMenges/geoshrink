@@ -19,7 +19,7 @@
   const mpInner = document.getElementById('mp-inner');
   const boardEl = document.querySelector('.board');
   const scoreboardEl = document.getElementById('mp-scoreboard');
-  const summaryOverlay = document.getElementById('mp-round-summary-overlay');
+  const summaryPanel = document.getElementById('mp-round-summary-panel');
 
   // Module-level (not per-mode-instance) so lobby state survives the
   // lobby -> live-match -> results transitions cleanly, per the plan's
@@ -30,7 +30,7 @@
     matchCtx: null, path: null, lastRound: -1, lastStep: -1,
     guessMode: false, mySubmitted: false, resolving: false,
     countdownTimer: null, hostTimer: null,
-    lastSummaryRound: -1, readySubmitted: false,
+    lastSummaryRound: -1, readySubmitted: false, summaryTargetName: '',
   };
 
   function escapeHtml(s) {
@@ -167,18 +167,29 @@
   }
 
   function renderResults(room) {
-    // Tiebreak on uid, not just insertion order: Firestore doesn't guarantee
+    // Ranked by the medal table first (gold count, then silver, then
+    // bronze — an Olympic-style medal table, per spec), score only as the
+    // final tiebreak. Tiebreak on uid last: Firestore doesn't guarantee
     // map-field key order is preserved identically across clients, so two
     // players' browsers could otherwise render a tied match with a
     // different "winner" each.
+    const tally = computeMedalTally(room, room.currentRound);
     const rows = Object.keys(room.players || {}).map((uid) => ({
       uid, name: room.players[uid].name, score: (room.scores && room.scores[uid]) || 0,
-    })).sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid));
+      tally: tally[uid] || { gold: 0, silver: 0, bronze: 0 },
+    })).sort((a, b) =>
+      (b.tally.gold - a.tally.gold) ||
+      (b.tally.silver - a.tally.silver) ||
+      (b.tally.bronze - a.tally.bronze) ||
+      (b.score - a.score) ||
+      a.uid.localeCompare(b.uid)
+    );
     mpInner.innerHTML =
       '<div class="mp-results"><h2>Match results</h2>' +
       rows.map((r, i) => '<div class="mp-result-row' + (i === 0 ? ' winner' : '') + '">' +
-        '<span class="mp-result-rank">#' + (i + 1) + '</span>' +
+        '<span class="mp-result-rank">' + (i === 0 ? '🏆' : '#' + (i + 1)) + '</span>' +
         '<span class="mp-result-name">' + escapeHtml(r.name) + '</span>' +
+        '<span class="mp-result-medals">' + medalTallyHtml(r.tally) + '</span>' +
         '<span class="mp-result-score">' + r.score + '</span></div>').join('') +
       '<button class="hud-btn" id="mp-results-done">Back to menu</button></div>';
     document.getElementById('mp-results-done').addEventListener('click', () => {
@@ -269,13 +280,63 @@
     renderScoreboard(room);
   }
 
+  // --- medals -------------------------------------------------------------
+  // Purely derived from room.roundScores (already written by maybeResolveStep
+  // for every completed round) rather than a separately-tracked Firestore
+  // field — recomputing is cheap and guarantees the tally can never drift
+  // out of sync with the score history it's built from.
+
+  const MEDAL_ICON = { gold: '🥇', silver: '🥈', bronze: '🥉' };
+  const MEDAL_TIERS = ['gold', 'silver', 'bronze'];
+
+  // Standard "competition ranking": ties share a medal and the next distinct
+  // score skips ahead by however many tied for it (two golds -> no silver,
+  // next distinct score is bronze) — the same convention as an Olympic table.
+  function computeRoundMedals(scoreByUid, uids) {
+    const ranked = uids.slice().sort((a, b) => (scoreByUid[b] - scoreByUid[a]) || a.localeCompare(b));
+    const medalByUid = {};
+    let tier = 0;
+    ranked.forEach((uid, i) => {
+      if (i > 0 && scoreByUid[uid] !== scoreByUid[ranked[i - 1]]) tier = i;
+      if (tier < 3) medalByUid[uid] = MEDAL_TIERS[tier];
+    });
+    return medalByUid;
+  }
+
+  function computeMedalTally(room, throughRound) {
+    const uids = Object.keys(room.players || {});
+    const tally = {};
+    uids.forEach((uid) => { tally[uid] = { gold: 0, silver: 0, bronze: 0 }; });
+    for (let r = 1; r <= throughRound; r++) {
+      const scoreByUid = {};
+      uids.forEach((uid) => {
+        const v = room.roundScores && room.roundScores[uid] && room.roundScores[uid][r];
+        if (v != null) scoreByUid[uid] = v;
+      });
+      const participants = Object.keys(scoreByUid);
+      if (!participants.length) continue;
+      const medalByUid = computeRoundMedals(scoreByUid, participants);
+      Object.keys(medalByUid).forEach((uid) => { tally[uid][medalByUid[uid]]++; });
+    }
+    return tally;
+  }
+
+  function medalTallyHtml(tally) {
+    if (!tally) return '';
+    return MEDAL_TIERS.filter((t) => tally[t] > 0)
+      .map((t) => '<span class="mp-medal-count mp-medal-' + t + '">' + MEDAL_ICON[t] + '×' + tally[t] + '</span>')
+      .join('');
+  }
+
   // --- between-rounds intermission ----------------------------------------
   // A round ending doesn't roll straight into the next one — players get a
   // beat to actually look at what happened, with an escape hatch (everyone
   // hits Next Round) so a fast group isn't stuck waiting out the full timer.
+  // Deliberately a docked sidebar panel, not a full-board overlay: players
+  // asked to still be able to observe/zoom the map during the intermission.
 
   function hideRoundSummaryOverlay() {
-    summaryOverlay.classList.remove('show');
+    summaryPanel.classList.remove('show');
   }
 
   function startSummaryCountdown(room) {
@@ -289,33 +350,73 @@
     mp.countdownTimer = setInterval(tick, 250);
   }
 
+  // Zooms onto just the round's target country and flashes it green so
+  // observers can clearly see which country it actually was, even though
+  // the last narrowing step usually left 2 candidates on screen.
+  function revealRoundTarget(ctx, room) {
+    const roundData = room.rounds && room.rounds[room.currentRound];
+    if (!roundData || !ctx) return '';
+    const target = roundData.target;
+    const feat = ctx.data.features[target];
+    if (!feat) return ctx.data.names[target] || '';
+    const newProj = ctx.map.buildProjection([feat]);
+    ctx.map.animateToProjection(newProj, () => {
+      ctx.map.paintClasses({
+        'group-a': () => false,
+        'group-b': () => false,
+        'guessable': () => false,
+        'eliminated': (i) => i !== target,
+      });
+      ctx.map.flashCountries([target], 'flash-good');
+    });
+    return ctx.data.names[target] || '';
+  }
+
   function renderRoundSummary(room) {
     if (room.currentRound !== mp.lastSummaryRound) {
       mp.lastSummaryRound = room.currentRound;
       mp.readySubmitted = false;
       startSummaryCountdown(room);
+      mp.summaryTargetName = revealRoundTarget(mp.matchCtx, room);
     }
     const myUid = GN.multiplayer.getUid();
     const roundScores = room.roundScores || {};
     const ready = room.readyForNext || {};
+    const uids = Object.keys(room.players || {});
+    const thisRoundScores = {};
+    uids.forEach((uid) => { thisRoundScores[uid] = (roundScores[uid] && roundScores[uid][room.currentRound]) || 0; });
+    const roundMedals = computeRoundMedals(thisRoundScores, uids);
+    const tally = computeMedalTally(room, room.currentRound);
+
     // Ranked by running total, same uid tiebreak as everywhere else this
     // matters — Firestore doesn't guarantee player map key order matches
     // across clients.
-    const rows = Object.keys(room.players || {}).map((uid) => ({
+    const rows = uids.map((uid) => ({
       uid,
       name: room.players[uid].name,
-      roundScore: (roundScores[uid] && roundScores[uid][room.currentRound]) || 0,
+      roundScore: thisRoundScores[uid],
       total: (room.scores && room.scores[uid]) || 0,
       isReady: !!ready[uid],
+      medal: roundMedals[uid] || null,
+      tally: tally[uid],
     })).sort((a, b) => b.total - a.total || a.uid.localeCompare(b.uid));
 
     document.getElementById('mp-round-summary-title').textContent = 'Round ' + room.currentRound + ' complete!';
+    const targetEl = document.getElementById('mp-round-summary-target');
+    if (targetEl) targetEl.innerHTML = mp.summaryTargetName ? 'It was <b>' + escapeHtml(mp.summaryTargetName) + '</b>' : '';
+
     document.getElementById('mp-round-summary-list').innerHTML = rows.map((r) =>
       '<div class="mp-summary-row' + (r.uid === myUid ? ' me' : '') + '">' +
+      '<div class="mp-summary-row-top">' +
+      '<span class="mp-summary-medal">' + (r.medal ? MEDAL_ICON[r.medal] : '') + '</span>' +
       '<span class="mp-summary-name">' + escapeHtml(r.name) + '</span>' +
+      '<span class="mp-summary-ready' + (r.isReady ? ' ready' : '') + '">' + (r.isReady ? '✓' : '…') + '</span>' +
+      '</div>' +
+      '<div class="mp-summary-row-bottom">' +
       '<span class="mp-summary-round-score">' + r.roundScore + ' this round</span>' +
       '<span class="mp-summary-total">' + r.total + ' total</span>' +
-      '<span class="mp-summary-ready' + (r.isReady ? ' ready' : '') + '">' + (r.isReady ? '✓' : '…') + '</span>' +
+      '</div>' +
+      '<div class="mp-summary-tally">' + medalTallyHtml(r.tally) + '</div>' +
       '</div>'
     ).join('');
 
@@ -323,7 +424,7 @@
     btn.disabled = mp.readySubmitted;
     btn.textContent = mp.readySubmitted ? 'Waiting for others…' : 'Next Round';
 
-    summaryOverlay.classList.add('show');
+    summaryPanel.classList.add('show');
   }
 
   function markReadyForNext() {
@@ -425,6 +526,8 @@
 
     mp.resolving = true;
     const targetSide = step.groupA.includes(roundData.target) ? 'A' : 'B';
+    const nextStep = room.currentStep + 1;
+    const roundOver = nextStep >= path.length;
     // Each round runs its own 5000-point budget (per the spec: "Each player
     // starts a round with 5,000 points"). currentRoundScores is that live,
     // in-round budget; it folds into the cumulative room.scores total only
@@ -439,14 +542,18 @@
         if (sub.choice && typeof sub.choice === 'object' && sub.choice.guess != null) {
           cost = sub.choice.guess === roundData.target ? 0 : WRONG_STEP_COST;
         } else if (sub.choice === 'A' || sub.choice === 'B') {
-          cost = sub.choice === targetSide ? CORRECT_STEP_COST : WRONG_STEP_COST;
+          const correct = sub.choice === targetSide;
+          // A correct pick on the round's final narrowing step costs
+          // nothing — same as a correct direct guess above — since that
+          // pick IS what identified the target, not just a step along the
+          // way. Only applies when it's actually correct; a wrong pick or
+          // a timeout on the final step still costs as usual.
+          cost = correct ? (roundOver ? 0 : CORRECT_STEP_COST) : WRONG_STEP_COST;
         }
       }
       roundScoresLive[uid] = Math.max(0, (roundScoresLive[uid] != null ? roundScoresLive[uid] : ROUND_BUDGET) - cost);
     });
 
-    const nextStep = room.currentStep + 1;
-    const roundOver = nextStep >= path.length;
     const updates = { currentRoundScores: roundScoresLive, submissions: {}, hostHeartbeatAt: Date.now() };
     if (!roundOver) {
       updates.currentStep = nextStep;
