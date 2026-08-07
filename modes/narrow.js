@@ -245,7 +245,7 @@
       const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
       // A flawless run (repaired mistakes count as never having happened —
       // see GN.progression.useRepairTool) advances this country's passport
-      // collection: Weak Visa -> Strong Visa -> Passport over three separate
+      // collection: Tourist Visa -> Long-Stay Visa -> Passport over three separate
       // flawless completions of the SAME country.
       let visaTxt = '';
       if (mistakes === 0) {

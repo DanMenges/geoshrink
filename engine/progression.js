@@ -49,8 +49,8 @@
   // use everywhere else in the app.
   const PASSPORT_TIERS = [
     { id: 0, label: 'Undiscovered' },
-    { id: 1, label: 'Weak Visa' },
-    { id: 2, label: 'Strong Visa' },
+    { id: 1, label: 'Tourist Visa' },
+    { id: 2, label: 'Long-Stay Visa' },
     { id: 3, label: 'Passport' },
   ];
   const PASSPORT_MAX_TIER = PASSPORT_TIERS.length - 1;
