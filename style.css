@@ -807,6 +807,7 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .daily-callout svg { width: 30px; height: 30px; flex: none; }
 .atlas-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--guessable) 14%, var(--surface-1)), var(--surface-1)); color: var(--guessable); }
 .mp-callout { background: linear-gradient(90deg, color-mix(in srgb, var(--good) 14%, var(--surface-1)), var(--surface-1)); color: var(--good); }
+.collections-callout { background: linear-gradient(90deg, color-mix(in srgb, #c9902a 14%, var(--surface-1)), var(--surface-1)); color: #c9902a; }
 .daily-callout-text { display: flex; flex-direction: column; gap: 3px; }
 .daily-callout-title { font-size: 19px; font-weight: 800; color: var(--text-primary); }
 .daily-callout-sub { font-size: 13.5px; color: var(--text-secondary); }
@@ -1071,6 +1072,106 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .mp-player-status { width: 16px; text-align: center; color: var(--text-muted); }
 .mp-player-status.submitted { color: var(--good); }
 
+/* repair-tool globe widget (Geo Shrink only) ------------------------------
+   Docks left in .hud-stack (mirrors how .mp-scoreboard docks right for
+   multiplayer — same "lives in the HUD flow, gaps pass clicks through to
+   the map" pointer-events model), a small rotating globe that cracks with
+   each mistake and mends crack-by-crack as Repair Tools are spent. Colors
+   deliberately match .hero-* (the Home hero globe) exactly — one shared
+   "spinning globe" visual identity across the app, not tied to the
+   light/dark page theme. */
+.globe-repair-widget {
+  display: none;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px 5px 5px;
+  box-shadow: var(--shadow);
+}
+.globe-repair-widget.show { display: flex; }
+.grw-globe-wrap { position: relative; width: 46px; height: 46px; flex: none; border-radius: 50%; overflow: visible; }
+#grw-globe { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.grw-sphere { fill: #16283f; stroke: rgba(255,255,255,0.18); stroke-width: 1; }
+.grw-graticule { fill: none; stroke: rgba(255,255,255,0.13); stroke-width: 0.4; }
+.grw-land { fill: #4f8fc7; stroke: rgba(255,255,255,0.16); stroke-width: 0.3; }
+.grw-crack {
+  fill: none; stroke: #ffffff; stroke-width: 2.1;
+  stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 1.2px rgba(0,0,0,0.75));
+}
+.grw-shattered .grw-globe-wrap::after {
+  content: '';
+  position: absolute; inset: -1px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.4), rgba(255,255,255,0.05) 70%);
+  pointer-events: none;
+}
+.grw-cracks-badge {
+  position: absolute; top: -3px; right: -3px;
+  min-width: 16px; height: 16px; padding: 0 3px;
+  border-radius: 999px;
+  background: var(--critical);
+  color: #ffffff;
+  font-size: 10px; font-weight: 800;
+  line-height: 16px; text-align: center;
+  display: none;
+}
+.grw-cracks-badge.show { display: block; }
+.grw-repair-btn { display: flex; align-items: center; gap: 5px; padding: 6px 10px; font-size: 12px; }
+.grw-repair-btn svg { flex: none; }
+@keyframes grwImpact {
+  0% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-3px) rotate(-3deg); }
+  40% { transform: translateX(3px) rotate(3deg); }
+  60% { transform: translateX(-2px) rotate(-1deg); }
+  80% { transform: translateX(2px) rotate(1deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+.globe-repair-widget.grw-impact { animation: grwImpact 320ms ease; }
+
+/* Collections / Passports -------------------------------------------------- */
+.collections-inner { max-width: 920px; margin: 0 auto; padding: 24px 20px 40px; }
+.collections-tab-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.collections-tab {
+  font: inherit; font-size: 13.5px; font-weight: 700;
+  padding: 9px 18px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface-1);
+  color: var(--text-secondary); cursor: pointer;
+}
+.collections-tab.active { background: #c9902a; border-color: #c9902a; color: #ffffff; }
+.collections-progress { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 16px; }
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+.coll-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 10px; text-align: center; position: relative;
+}
+.coll-flag { width: 48px; height: 34px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); }
+.coll-flag-none { width: 48px; height: 34px; border-radius: 4px; background: var(--eliminated-fill); display: block; }
+.coll-name { font-size: 12px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+.coll-tier-badge { width: 20px; height: 20px; }
+.coll-tier-icon { width: 20px; height: 20px; }
+.coll-tier-label { font-size: 10.5px; color: var(--text-muted); }
+
+.coll-card.tier-0 .coll-flag { opacity: 0.32; filter: grayscale(1); }
+.coll-card.tier-1 { border-color: color-mix(in srgb, #c9902a 35%, var(--border)); }
+.coll-card.tier-1 .coll-tier-icon, .coll-card.tier-1 .coll-tier-label { color: color-mix(in srgb, #c9902a 55%, var(--text-secondary)); font-weight: 700; }
+.coll-card.tier-2 { border-color: #8a90a0; box-shadow: 0 0 0 1px color-mix(in srgb, #8a90a0 30%, transparent) inset; }
+.coll-card.tier-2 .coll-tier-icon, .coll-card.tier-2 .coll-tier-label { color: #75798a; font-weight: 700; }
+.coll-card.tier-3 {
+  border-color: #c9902a;
+  background: color-mix(in srgb, #c9902a 10%, var(--surface-1));
+  box-shadow: 0 2px 10px color-mix(in srgb, #c9902a 25%, transparent);
+}
+.coll-card.tier-3 .coll-tier-icon, .coll-card.tier-3 .coll-tier-label { color: #c9902a; font-weight: 800; }
+
 /* responsive ------------------------------------------------------------- */
 @media (max-width: 1000px) {
   .mode-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1099,6 +1200,10 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .find-flag-img { height: 48px; }
   .mp-scoreboard { width: 100%; align-self: stretch; } /* right-docked sidebar doesn't fit next to a near-full-width mission banner on phones — stack instead */
   .mp-round-summary-panel { width: 100%; align-self: stretch; max-height: 46vh; }
+  .grw-globe-wrap { width: 32px; height: 32px; }
+  .grw-repair-btn { padding: 6px 8px; font-size: 11px; }
+  .collections-inner { padding: 16px 14px 32px; }
+  .collections-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 9px; }
 
   /* icon-only HUD buttons keep a touch-friendly hit area even as content shrinks */
   button.hud-btn.icon-only { padding: 10px; }

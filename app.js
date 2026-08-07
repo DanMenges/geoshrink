@@ -57,7 +57,9 @@
       GN.map.setBaseFeatures(features); // must happen before the first setProjectionImmediate
 
       if (topology.objects.land) {
-        GN.heroGlobe.setLand(topojson.feature(topology, topology.objects.land));
+        const landFeature = topojson.feature(topology, topology.objects.land);
+        GN.heroGlobe.setLand(landFeature);
+        if (GN.repairGlobe) GN.repairGlobe.setLand(landFeature);
       }
 
       GN.map.onNeedHighRes(() => {

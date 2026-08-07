@@ -48,6 +48,17 @@
           <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
         </div>
 
+        <div class="globe-repair-widget" id="globe-repair-widget">
+          <div class="grw-globe-wrap">
+            <svg id="grw-globe" viewBox="0 0 72 72" aria-hidden="true"></svg>
+            <span class="grw-cracks-badge" id="grw-cracks-badge">0</span>
+          </div>
+          <button class="hud-btn grw-repair-btn" id="grw-repair-btn" title="Use a Repair Tool to undo a mistake and keep this run flawless">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L4 16.7V20h3.3l5.3-5.3a4 4 0 0 0 5.1-5.4l-2.6 2.6-2-2 2.6-2.6Z" stroke-linejoin="round" stroke-linecap="round"/></svg>
+            <span id="grw-tools-count">0</span>
+          </button>
+        </div>
+
         <div class="mp-scoreboard" id="mp-scoreboard"></div>
 
         <div class="mp-round-summary-panel" id="mp-round-summary-panel">
@@ -141,6 +152,13 @@
               <span class="daily-callout-sub">Race friends through the same shrinking search, live.</span>
             </span>
           </button>
+          <button class="daily-callout collections-callout" id="collections-callout">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4.5h9.5a2 2 0 0 1 2 2V19a1.5 1.5 0 0 0 1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="9.5" cy="10" r="2"/><path d="M6.5 15.5c.5-1.6 1.8-2.4 3-2.4s2.5.8 3 2.4"/></svg>
+            <span class="daily-callout-text">
+              <span class="daily-callout-title">Collections</span>
+              <span class="daily-callout-sub" id="collections-callout-sub">Passports earned from flawless Geo Shrink runs.</span>
+            </span>
+          </button>
         </div>
         <div class="mode-grid" id="mode-grid"></div>
 
@@ -179,6 +197,22 @@
         <h1>Multiplayer</h1>
       </div>
       <div class="mp-inner" id="mp-inner"></div>
+    </div>
+
+    <div class="multiplayer-screen collections-screen" id="collections-screen">
+      <div class="mp-topbar">
+        <button class="hud-btn icon-only" id="collections-back-btn" title="Back to Home">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
+        </button>
+        <h1>Collections</h1>
+      </div>
+      <div class="collections-inner">
+        <div class="collections-tab-row" id="collections-tab-row">
+          <button class="collections-tab active" data-tab="passports">Passports</button>
+        </div>
+        <div class="collections-progress" id="collections-progress"></div>
+        <div class="collections-grid" id="collections-grid"></div>
+      </div>
     </div>
 
     <div class="shop-overlay" id="shop-overlay">
@@ -234,9 +268,11 @@
 <script src="engine/geoPartition.js"></script>
 <script src="engine/modeShell.js"></script>
 <script src="engine/heroGlobe.js"></script>
+<script src="engine/repairGlobe.js"></script>
 <script src="engine/shop.js"></script>
 <script src="engine/multiplayer.js"></script>
 <script src="engine/home.js"></script>
+<script src="engine/collections.js"></script>
 <script src="modes/narrow.js"></script>
 <script src="modes/neighbor.js"></script>
 <script src="modes/fog.js"></script>

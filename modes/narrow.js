@@ -137,6 +137,7 @@
       const sel = ctx.map.flashCountries([idx], 'flash-bad');
       GN.progression.applyOutcome({ type: 'wrong' });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
+      GN.repairGlobe.setCracks(GN.progression.getMistakes());
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
       ctx.hud.shakeBoard();
       ctx.scheduleTimeout(() => {
@@ -189,6 +190,7 @@
       const sel = ctx.map.flashCountries(clickedSet, 'flash-bad');
       GN.progression.applyOutcome({ type: 'wrong' });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
+      GN.repairGlobe.setCracks(GN.progression.getMistakes());
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
       ctx.hud.shakeBoard();
       ctx.scheduleTimeout(() => sel.classed('flash-bad', false), 320);
@@ -209,6 +211,7 @@
       const sel = ctx.map.flashCountries([idx], 'flash-bad');
       GN.progression.applyOutcome({ type: 'wrong' });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
+      GN.repairGlobe.setCracks(GN.progression.getMistakes());
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
       ctx.hud.shakeBoard();
       ctx.scheduleTimeout(() => {
@@ -240,12 +243,67 @@
       ctx.hud.updateStat('points', String(score));
       ctx.hud.setProgress(1);
       const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
+      // A flawless run (repaired mistakes count as never having happened —
+      // see GN.progression.useRepairTool) advances this country's passport
+      // collection: Weak Visa -> Strong Visa -> Passport over three separate
+      // flawless completions of the SAME country.
+      let visaTxt = '';
+      if (mistakes === 0) {
+        const result = GN.progression.recordFlawlessCompletion(ctx.state.targetIdx);
+        if (result.tierUp) {
+          visaTxt = ' Earned a ' + result.tierLabel + ' for ' + ctx.data.names[ctx.state.targetIdx] + '!';
+        }
+      }
       ctx.hud.showWin({
         title: ctx.data.names[ctx.state.targetIdx] + '!',
-        sub: isDirectGuess
+        sub: (isDirectGuess
           ? 'Guessed directly for ' + score + ' points' + mistakeTxt + '.'
-          : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.',
+          : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.') + visaTxt,
       });
+    });
+  }
+
+  // --- repair-tool globe widget --------------------------------------------
+  // Geo Shrink only (see engine/repairGlobe.js) — a flawless run here is the
+  // only thing a Repair Tool actually helps preserve.
+
+  const repairWidgetEl = document.getElementById('globe-repair-widget');
+  const repairToolsCountEl = document.getElementById('grw-tools-count');
+
+  function showRepairWidget() {
+    if (repairWidgetEl) repairWidgetEl.classList.add('show');
+    GN.repairGlobe.start();
+    GN.repairGlobe.reset();
+    refreshRepairToolReadout();
+  }
+  function hideRepairWidget() {
+    GN.repairGlobe.stop();
+    if (repairWidgetEl) repairWidgetEl.classList.remove('show');
+  }
+  function refreshRepairToolReadout() {
+    if (repairToolsCountEl) repairToolsCountEl.textContent = String(GN.progression.getRepairToolCount());
+  }
+  // Wired exactly once at module load (not per-setup — #grw-repair-btn is a
+  // static element in index.html, not regenerated via ctx.hud.setPanel() like
+  // the guess-mode toggle, so re-binding on every "New Game" would stack
+  // duplicate listeners). Reads the live mode context at click time instead,
+  // same pattern app.js's own onClick/onHover dispatch already uses.
+  const repairBtnEl = document.getElementById('grw-repair-btn');
+  if (repairBtnEl) {
+    repairBtnEl.addEventListener('click', () => {
+      const cur = GN.modeShell.current;
+      if (!cur || cur.id !== 'narrow') return;
+      const ctx = cur.ctx;
+      if (ctx.hud.isWinShown() || ctx.state.inputLocked) return;
+      if (GN.progression.useRepairTool()) {
+        GN.repairGlobe.repairOne();
+        ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
+        refreshRepairToolReadout();
+      } else if (GN.progression.getRepairToolCount() <= 0) {
+        GN.hud.showToast('No Repair Tools left — earn more by leveling up!');
+      } else {
+        GN.hud.showToast('Nothing to repair right now.');
+      }
     });
   }
 
@@ -273,6 +331,7 @@
       ctx.hud.setHint(HINT_DEFAULT);
       wirePanel(ctx);
       ctx.map.setActiveFeatureIndices(ctx.state.pool);
+      showRepairWidget();
       startNewRound(ctx);
     },
     teardown(ctx) {
@@ -282,6 +341,7 @@
       // narrow.js-scoped — leaving it behind would tint group-a/group-b in
       // whichever mode is entered next.
       ctx.map.svg.style('--narrow-progress', null);
+      hideRepairWidget();
     },
     onMapClick(ctx, idx) { onCountryClick(ctx, idx); },
   };

@@ -137,6 +137,7 @@
     renderDifficultyPicker();
     renderDailyCallout();
     renderModeGrid();
+    if (GN.collections) GN.collections.refreshCallout();
     homeScreen.classList.add('show');
     boardEl.classList.add('hidden');
     GN.heroGlobe.start();

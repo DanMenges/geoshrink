@@ -42,6 +42,27 @@
 
   const SHIELD_PRICE = 120;
 
+  // Per-country collectible earned by flawless (0-mistake) Geo Shrink
+  // completions of that specific country: tier 0 (absent from the map)
+  // through 3 (Passport, max — repeating it further is a no-op). Keyed by
+  // ISO3, the same stable per-country identifier `iso3ByIdx`/country-meta.json
+  // use everywhere else in the app.
+  const PASSPORT_TIERS = [
+    { id: 0, label: 'Undiscovered' },
+    { id: 1, label: 'Weak Visa' },
+    { id: 2, label: 'Strong Visa' },
+    { id: 3, label: 'Passport' },
+  ];
+  const PASSPORT_MAX_TIER = PASSPORT_TIERS.length - 1;
+
+  // Level-up rewards: coins on every level, plus a Repair Tool grant every
+  // 10th — separate from the per-answer coin trickle, so leveling up itself
+  // stays a meaningful, escalating reward across the "long horizon" of play.
+  const LEVEL_UP_COIN_BASE = 20;
+  const LEVEL_UP_COIN_STEP = 10;
+  const REPAIR_TOOL_LEVEL_INTERVAL = 10;
+  const REPAIR_TOOLS_PER_MILESTONE = 5;
+
   let score = 0;
   let mistakes = 0;
 
@@ -53,13 +74,15 @@
       // Starting balance is generous on purpose — it lets a new player open
       // the shop and actually try a purchase right away instead of grinding
       // toward it blind.
-      data.progress = { xp: 0, tier: 'easy', coins: 1000, shields: 0, ownedThemes: FREE_THEME_IDS.slice(), theme: 'classic', recentTargets: [], showFlags: true };
+      data.progress = { xp: 0, tier: 'easy', coins: 1000, shields: 0, ownedThemes: FREE_THEME_IDS.slice(), theme: 'classic', recentTargets: [], showFlags: true, passports: {}, repairTools: 0 };
     }
     if (data.progress.coins == null) data.progress.coins = 1000;
     if (data.progress.shields == null) data.progress.shields = 0;
     if (!data.progress.recentTargets) data.progress.recentTargets = [];
     if (data.progress.showFlags == null) data.progress.showFlags = true;
     if (!data.progress.ownedThemes) data.progress.ownedThemes = [];
+    if (!data.progress.passports) data.progress.passports = {};
+    if (data.progress.repairTools == null) data.progress.repairTools = 0;
     // Free themes are granted unconditionally, including retroactively to
     // existing saves — nothing with price 0 should ever need "buying".
     FREE_THEME_IDS.forEach((id) => {
@@ -105,9 +128,23 @@
     const progress = loadProgress();
     const beforeLevel = levelForXp(progress.xp);
     progress.xp += amount;
-    saveProgress(progress);
     const afterLevel = levelForXp(progress.xp);
-    return { xp: progress.xp, level: afterLevel, leveledUp: afterLevel > beforeLevel };
+    // A loop, not just a check against afterLevel: a single XP grant can in
+    // principle cross more than one level boundary at once (early levels are
+    // cheap), and each crossed level should pay out its own reward rather
+    // than only the final one landed on.
+    let coinsAwarded = 0, repairToolsAwarded = 0;
+    for (let lvl = beforeLevel + 1; lvl <= afterLevel; lvl++) {
+      coinsAwarded += LEVEL_UP_COIN_BASE + LEVEL_UP_COIN_STEP * lvl;
+      if (lvl % REPAIR_TOOL_LEVEL_INTERVAL === 0) repairToolsAwarded += REPAIR_TOOLS_PER_MILESTONE;
+    }
+    if (coinsAwarded > 0) progress.coins = (progress.coins || 0) + coinsAwarded;
+    if (repairToolsAwarded > 0) progress.repairTools = (progress.repairTools || 0) + repairToolsAwarded;
+    saveProgress(progress);
+    return {
+      xp: progress.xp, level: afterLevel, leveledUp: afterLevel > beforeLevel,
+      coinsAwarded, repairToolsAwarded,
+    };
   }
 
   // --- coin wallet -----------------------------------------------------------
@@ -146,6 +183,23 @@
     return true;
   }
 
+  // --- repair tool (consumable — undoes a mistake mid-round) -----------------
+  // Granted for free every REPAIR_TOOL_LEVEL_INTERVAL levels (see addXp), not
+  // purchasable with coins. Decrements the live per-round `mistakes` counter
+  // directly, so a repaired mistake is indistinguishable from one that never
+  // happened to every consumer that reads getMistakes() — the HUD stat, the
+  // win-screen text, and the flawless check recordFlawlessCompletion gates on.
+
+  function getRepairToolCount() { return loadProgress().repairTools || 0; }
+  function useRepairTool() {
+    if (getRepairToolCount() <= 0 || mistakes <= 0) return false;
+    const progress = loadProgress();
+    progress.repairTools -= 1;
+    saveProgress(progress);
+    mistakes -= 1;
+    return true;
+  }
+
   // --- cosmetic themes ---------------------------------------------------
 
   function getThemeCatalog() { return THEMES; }
@@ -168,6 +222,41 @@
     saveProgress(progress);
     if (GN.theme) GN.theme.apply();
     return true;
+  }
+
+  // --- passport collection -------------------------------------------------
+  // One entry per country, keyed by ISO3. Advanced only by
+  // recordFlawlessCompletion (called from Geo Shrink on a 0-mistake finish),
+  // never regresses on a non-flawless run — trying again just doesn't help,
+  // it doesn't set you back.
+
+  function iso3ForIdx(idx) {
+    return GN.data && GN.data.iso3ByIdx ? GN.data.iso3ByIdx[idx] : null;
+  }
+  function getPassportTier(idx) {
+    const iso3 = iso3ForIdx(idx);
+    if (!iso3) return 0;
+    return loadProgress().passports[iso3] || 0;
+  }
+  function getPassportTierByIso3(iso3) {
+    return loadProgress().passports[iso3] || 0;
+  }
+  function recordFlawlessCompletion(idx) {
+    const iso3 = iso3ForIdx(idx);
+    if (!iso3) return { iso3: null, tier: 0, tierUp: false, tierLabel: '' };
+    const progress = loadProgress();
+    const before = progress.passports[iso3] || 0;
+    if (before >= PASSPORT_MAX_TIER) {
+      return { iso3, tier: before, tierUp: false, tierLabel: PASSPORT_TIERS[before].label };
+    }
+    const after = before + 1;
+    progress.passports[iso3] = after;
+    saveProgress(progress);
+    return { iso3, tier: after, tierUp: true, tierLabel: PASSPORT_TIERS[after].label };
+  }
+  function getPassportCollectedCount() {
+    const passports = loadProgress().passports;
+    return Object.keys(passports).filter((k) => passports[k] > 0).length;
   }
 
   // --- settings ---------------------------------------------------------
@@ -345,7 +434,12 @@
     const xpResult = addXp(xpGain);
     if (GN.hud && GN.hud.refreshLevelChip) GN.hud.refreshLevelChip();
     if (xpResult.leveledUp && GN.hud) {
-      GN.hud.showToast('Level up! You’re now Level ' + xpResult.level + '.');
+      let msg = 'Level up! You’re now Level ' + xpResult.level + '.';
+      const rewardParts = [];
+      if (xpResult.coinsAwarded > 0) rewardParts.push('+' + xpResult.coinsAwarded + ' coins');
+      if (xpResult.repairToolsAwarded > 0) rewardParts.push(xpResult.repairToolsAwarded + ' Repair Tools');
+      if (rewardParts.length) msg += ' ' + rewardParts.join(' and ') + '!';
+      GN.hud.showToast(msg);
     }
 
     // Coins: a mode can pass an explicit amount (Expedition's combo formula);
@@ -367,14 +461,16 @@
   }
 
   GN.progression = {
-    DIFFICULTIES, THEMES, SHIELD_PRICE,
+    DIFFICULTIES, THEMES, SHIELD_PRICE, PASSPORT_TIERS,
     reset, getScore, getMistakes, applyOutcome, getCurrentStreak, getBestStreak,
     winBonusForMistakes, applyWinBonus,
-    getXp, getLevel, getSelectedDifficultyId, getSelectedDifficulty, setSelectedDifficulty,
+    getXp, getLevel, addXp, getSelectedDifficultyId, getSelectedDifficulty, setSelectedDifficulty,
     xpForLevel, buildPool, pickTarget,
     getCoins, addCoins, spendCoins,
     getShieldCount, buyShield, consumeShield,
+    getRepairToolCount, useRepairTool,
     getThemeCatalog, isThemeOwned, getEquippedThemeId, getEquippedTheme, buyTheme, equipTheme,
+    getPassportTier, getPassportTierByIso3, recordFlawlessCompletion, getPassportCollectedCount,
     getShowFlags, setShowFlags,
   };
 })();

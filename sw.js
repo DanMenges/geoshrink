@@ -1,4 +1,4 @@
-const CACHE = 'geoshrink-v34';
+const CACHE = 'geoshrink-v35';
 const ASSETS = [
   './',
   './index.html',
@@ -17,10 +17,12 @@ const ASSETS = [
   './engine/geoPartition.js',
   './engine/modeShell.js',
   './engine/heroGlobe.js',
+  './engine/repairGlobe.js',
   './engine/shop.js',
   './engine/account.js',
   './engine/multiplayer.js',
   './engine/home.js',
+  './engine/collections.js',
   './modes/narrow.js',
   './modes/neighbor.js',
   './modes/fog.js',
