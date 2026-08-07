@@ -222,45 +222,76 @@
     }
   }
 
+  // How long the stamp celebration gets to play before the win overlay
+  // (which dims most of the map) covers it — long enough to actually read
+  // as a moment, short enough not to feel like a delay before the reward.
+  const CELEBRATION_HOLD_MS = 700;
+
   function finishGame(ctx, finalSet, isDirectGuess) {
-    const feats = finalSet.map(i => ctx.data.features[i]);
-    const newProj = ctx.map.buildProjection(feats);
     const finalIdxSet = new Set(finalSet);
     ctx.state.endgame = null;
-    ctx.map.animateToProjection(newProj, () => {
-      ctx.map.paintClasses({
-        'group-a': () => false,
-        'group-b': () => false,
-        'guessable': () => false,
-        'eliminated': (i) => !finalIdxSet.has(i),
-      });
-      ctx.map.flashCountries(finalSet, 'flash-good');
-      const level = ctx.state.level || 1;
-      const mistakes = GN.progression.getMistakes();
-      const score = GN.progression.getScore();
-      ctx.hud.updateStat('round', String(level));
-      ctx.hud.updateStat('remaining', '1');
-      ctx.hud.updateStat('points', String(score));
-      ctx.hud.setProgress(1);
-      const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
-      // A flawless run (repaired mistakes count as never having happened —
-      // see GN.progression.useRepairTool) advances this country's passport
-      // collection: Tourist Visa -> Long-Stay Visa -> Passport over three separate
-      // flawless completions of the SAME country.
-      let visaTxt = '';
-      if (mistakes === 0) {
-        const result = GN.progression.recordFlawlessCompletion(ctx.state.targetIdx);
-        if (result.tierUp) {
-          visaTxt = ' Earned a ' + result.tierLabel + ' for ' + ctx.data.names[ctx.state.targetIdx] + '!';
-        }
+    // Deliberately no camera zoom here anymore — the map stays exactly where
+    // the last narrowing step already left it (still reasonably close in,
+    // just not a fresh zoom onto the single winner) and the celebration
+    // plays in place instead of the view jumping.
+    ctx.map.paintClasses({
+      'group-a': () => false,
+      'group-b': () => false,
+      'guessable': () => false,
+      'eliminated': (i) => !finalIdxSet.has(i),
+    });
+    ctx.map.flashCountries(finalSet, 'flash-good');
+    celebrateStamp(ctx, ctx.state.targetIdx);
+
+    const level = ctx.state.level || 1;
+    const mistakes = GN.progression.getMistakes();
+    const score = GN.progression.getScore();
+    ctx.hud.updateStat('round', String(level));
+    ctx.hud.updateStat('remaining', '1');
+    ctx.hud.updateStat('points', String(score));
+    ctx.hud.setProgress(1);
+    const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
+    // A flawless run (repaired mistakes count as never having happened —
+    // see GN.progression.useRepairTool) advances this country's passport
+    // collection: Tourist Visa -> Long-Stay Visa -> Passport over three separate
+    // flawless completions of the SAME country.
+    let visaTxt = '';
+    if (mistakes === 0) {
+      const result = GN.progression.recordFlawlessCompletion(ctx.state.targetIdx);
+      if (result.tierUp) {
+        visaTxt = ' Earned a ' + result.tierLabel + ' for ' + ctx.data.names[ctx.state.targetIdx] + '!';
       }
+    }
+    ctx.scheduleTimeout(() => {
       ctx.hud.showWin({
         title: ctx.data.names[ctx.state.targetIdx] + '!',
         sub: (isDirectGuess
           ? 'Guessed directly for ' + score + ' points' + mistakeTxt + '.'
           : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.') + visaTxt,
       });
-    });
+    }, CELEBRATION_HOLD_MS);
+  }
+
+  // --- celebration: an "official stamp" seal, landing right on the map ----
+  // Fits the passport/visa theme already established by the Collections
+  // system — a small, tasteful mark rather than a screen-covering effect.
+  const STAMP_INNER_SVG =
+    '<circle class="cs-ring-a" r="18"></circle>' +
+    '<circle class="cs-ring-b" r="13"></circle>' +
+    '<path class="cs-check" d="M-6.5,0 L-1.5,5.5 L7.5,-7"></path>';
+
+  function celebrateStamp(ctx, idx) {
+    const proj = ctx.map.projection;
+    const centroid = ctx.data.centroids && ctx.data.centroids[idx];
+    if (!proj || !centroid) return;
+    const pt = proj(centroid);
+    if (!pt) return; // e.g. the far side of the globe after a rotation — nothing to anchor to, skip quietly
+    const g = ctx.map.svg.append('g')
+      .attr('class', 'celebration-stamp')
+      .attr('transform', 'translate(' + pt[0] + ',' + pt[1] + ')');
+    g.append('circle').attr('class', 'cs-pulse').attr('r', 4);
+    g.append('g').attr('class', 'cs-mark').html(STAMP_INNER_SVG);
+    ctx.scheduleTimeout(() => g.remove(), 1500);
   }
 
   // --- repair-tool globe widget --------------------------------------------
