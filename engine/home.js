@@ -127,7 +127,8 @@
     const icon = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v3.5M16 3v3.5"/></svg>';
     btn.innerHTML = icon +
       '<span class="daily-callout-text">' +
-      '<span class="daily-callout-title">' + (playedToday ? 'Daily Challenge — see today’s result' : 'Daily Challenge') + '</span>' +
+      '<span class="daily-callout-title">Daily Challenge</span>' +
+      (playedToday ? '<span class="daily-callout-hint">See today’s result</span>' : '') +
       '<span class="daily-callout-sub">' + (playedToday ? record.shareText.split('\n')[2] : 'Same puzzle for everyone, once a day.') + '</span>' +
       '</span>';
   }

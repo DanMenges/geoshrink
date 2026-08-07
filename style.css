@@ -844,6 +844,7 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .collections-callout { background: linear-gradient(90deg, color-mix(in srgb, #c9902a 14%, var(--surface-1)), var(--surface-1)); color: #c9902a; }
 .daily-callout-text { display: flex; flex-direction: column; gap: 3px; }
 .daily-callout-title { font-size: 19px; font-weight: 800; color: var(--text-primary); }
+.daily-callout-hint { font-size: 12.5px; font-weight: 700; color: var(--group-a); }
 .daily-callout-sub { font-size: 13.5px; color: var(--text-secondary); }
 .tier-chip {
   font: inherit;
