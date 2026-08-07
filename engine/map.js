@@ -86,7 +86,16 @@
   // 110m loads eagerly (small, fast first paint); 50m is fetched lazily the
   // first time the active subset is small enough that its extra detail would
   // actually be visible, then cached and reused for the rest of the session.
+  // Two independent triggers, either one is enough: a game mode narrowing
+  // its own subset down (e.g. Narrow Down's shrinking candidates), OR the
+  // player manually zooming in via scroll/pinch/drag-zoom regardless of how
+  // many countries the current mode considers "in play" — modes like World
+  // Atlas, Fog of War, or Expedition keep the whole ~176-country pool active
+  // the entire time, so without this second trigger a player zooming deep
+  // into one country there would be stuck looking at 110m's coarse, blocky
+  // coastline vertices no matter how far in they zoomed.
   const TIER_ZOOM_THRESHOLD = 20;
+  const TIER_MANUAL_ZOOM_THRESHOLD = 2.5;
   const featuresByTier = { '110m': null, '50m': null };
   let activeTier = '110m';
   let highResRequested = false;
@@ -109,7 +118,8 @@
 
   function updateActiveTier() {
     const count = activeFeatureIndices.length || baseCount;
-    if (count <= TIER_ZOOM_THRESHOLD) {
+    const wantsHighRes = count <= TIER_ZOOM_THRESHOLD || zoomFactor >= TIER_MANUAL_ZOOM_THRESHOLD;
+    if (wantsHighRes) {
       if (featuresByTier['50m']) {
         activeTier = '50m';
       } else {
