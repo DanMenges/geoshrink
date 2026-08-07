@@ -19,6 +19,26 @@
   const hint = document.getElementById('hint');
   const panelEl = document.getElementById('mode-panel');
   const legendEl = document.getElementById('mode-legend');
+  const hudLevelNum = document.getElementById('hud-level-num');
+  const hudLevelFill = document.getElementById('hud-level-fill');
+
+  // Called from GN.progression.applyOutcome() itself (same pattern as the
+  // shop's wallet-refresh hook) so the in-game level chip updates the moment
+  // XP changes, from any mode, without every mode needing to remember to
+  // call this — hud.js loads before progression.js, so GN.progression may
+  // not exist yet on the very first paint; the guard just no-ops until the
+  // first real update arrives.
+  function refreshLevelChip() {
+    if (!hudLevelNum || !GN.progression) return;
+    const xp = GN.progression.getXp();
+    const level = GN.progression.getLevel();
+    const thisLevelXp = GN.progression.xpForLevel(level);
+    const nextLevelXp = GN.progression.xpForLevel(level + 1);
+    const span = Math.max(1, nextLevelXp - thisLevelXp);
+    const into = xp - thisLevelXp;
+    hudLevelNum.textContent = level;
+    hudLevelFill.style.width = Math.round(100 * Math.max(0, Math.min(1, into / span))) + '%';
+  }
 
   function setStats(list) {
     statsContainer.innerHTML = '';
@@ -108,7 +128,7 @@
   GN.hud = {
     setStats, updateStat, setPanel, setLegend, setHint, setTarget, setModeTitle, setProgress,
     showTooltip, moveTooltip, hideTooltip, showToast, showWin, hideWin, isWinShown, shakeBoard,
-    showRoundResult, hideRoundResult, isRoundResultShown,
+    showRoundResult, hideRoundResult, isRoundResultShown, refreshLevelChip,
     winOverlay, boardEl,
   };
 })();

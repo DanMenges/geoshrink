@@ -10,13 +10,29 @@
   const DIRECT_GUESS_STEP = 100;
   const HINT_DEFAULT = 'Click the highlighted region you believe contains the target country.';
   const HINT_GUESS = 'Guess mode: click any highlighted country to name it directly.';
+  const HINT_ENDGAME_3 = 'Down to the final three — pick the one you think is correct.';
+  const HINT_ENDGAME_2 = 'Down to the final two — pick the one you think is correct.';
+  const STANDARD_LEGEND =
+    '<span class="a"><span class="swatch"></span>Region A</span>' +
+    '<span class="b"><span class="swatch"></span>Region B</span>' +
+    '<span class="g"><span class="swatch"></span>Guessable</span>' +
+    '<span class="elim"><span class="swatch"></span>Eliminated</span>';
+  // A binary split's "grouped" choice hides which specific country in the
+  // larger group might be right — fine mid-search, but flat at the very end
+  // where the player likely already knows several of the remaining
+  // countries by name. Once exactly 3 (then 2) remain, skip the grouped
+  // split and let them pick a specific country directly, each in its own
+  // color. Reuses the existing group-a/group-b/guessable palette (already
+  // colorblind-validated together) rather than inventing new colors.
+  const ENDGAME_PAINT_CLASSES = ['group-a', 'group-b', 'guessable'];
+  const ENDGAME_LEGEND_CLASSES = ['a', 'b', 'g'];
 
   const { buildPath } = GN.geoPartition;
 
   function wirePanel(ctx) {
     const guessBtn = document.getElementById('guess-btn');
     guessBtn.addEventListener('click', () => {
-      if (!ctx.data.features || ctx.hud.isWinShown() || ctx.state.inputLocked) return;
+      if (!ctx.data.features || ctx.hud.isWinShown() || ctx.state.inputLocked || ctx.state.endgame) return;
       setGuessMode(ctx, !ctx.state.guessMode);
       paintLevel(ctx);
     });
@@ -34,12 +50,18 @@
     ctx.state.targetIdx = GN.progression.pickTarget(pool);
     ctx.state.path = buildPath(ctx.state.targetIdx, pool, ctx.data);
     ctx.state.level = 0;
+    ctx.state.endgame = null;
     ctx.hud.setTarget('Find: <b>' + ctx.data.names[ctx.state.targetIdx] + '</b>');
     goToLevel(ctx, 0, false, () => { ctx.state.inputLocked = false; });
   }
 
   function paintLevel(ctx) {
     const step = ctx.state.path[ctx.state.level];
+    if (!ctx.state.guessMode && step.subset.length === 3) {
+      enterEndgame(ctx, step.subset);
+      return;
+    }
+    ctx.hud.setLegend(STANDARD_LEGEND);
     const inA = new Set(step.groupA), inB = new Set(step.groupB);
     const inSubset = new Set(step.subset);
     const guessMode = ctx.state.guessMode;
@@ -69,10 +91,74 @@
     ctx.hud.updateStat('points', String(GN.progression.getScore()));
     const progress = remaining >= total ? 0 : 1 - Math.log(remaining) / Math.log(total);
     ctx.hud.setProgress(progress);
+    // Colors get a little more vivid as the search narrows — see the
+    // --narrow-progress comment in style.css.
+    ctx.map.svg.style('--narrow-progress', progress);
+  }
+
+  // --- endgame: final 3 (then 2) individually, each its own color ---------
+
+  function enterEndgame(ctx, subset) {
+    ctx.state.endgame = { candidates: subset.slice() };
+    paintEndgame(ctx);
+  }
+
+  function paintEndgame(ctx) {
+    const candidates = ctx.state.endgame.candidates;
+    const colorOf = new Map(candidates.map((idx, i) => [idx, ENDGAME_PAINT_CLASSES[i]]));
+    ctx.map.paintClasses({
+      'group-a': (i) => colorOf.get(i) === 'group-a',
+      'group-b': (i) => colorOf.get(i) === 'group-b',
+      'guessable': (i) => colorOf.get(i) === 'guessable',
+      'eliminated': (i) => !colorOf.has(i),
+    });
+    ctx.map.clearFlashClasses();
+    ctx.hud.setLegend(
+      candidates.map((_, i) =>
+        '<span class="' + ENDGAME_LEGEND_CLASSES[i] + '"><span class="swatch"></span>Candidate ' + (i + 1) + '</span>'
+      ).join('')
+    );
+    ctx.hud.setHint(candidates.length === 3 ? HINT_ENDGAME_3 : HINT_ENDGAME_2);
+    updateStats(ctx, ctx.state.level, candidates.length);
+  }
+
+  function handleEndgameClick(ctx, idx) {
+    const candidates = ctx.state.endgame.candidates;
+    if (!candidates.includes(idx)) return;
+    ctx.state.inputLocked = true;
+    if (idx === ctx.state.targetIdx) {
+      ctx.map.flashCountries([idx], 'flash-good');
+      ctx.scheduleTimeout(() => {
+        GN.progression.applyOutcome({ type: 'correct', points: NARROW_CORRECT_POINTS });
+        ctx.state.level++;
+        finishGame(ctx, [idx], false);
+      }, 260);
+    } else {
+      const sel = ctx.map.flashCountries([idx], 'flash-bad');
+      GN.progression.applyOutcome({ type: 'wrong' });
+      ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
+      ctx.hud.updateStat('points', String(GN.progression.getScore()));
+      ctx.hud.shakeBoard();
+      ctx.scheduleTimeout(() => {
+        sel.classed('flash-bad', false);
+        const remaining = candidates.filter((c) => c !== idx);
+        if (remaining.length === 1) {
+          // Only one possibility left by elimination — resolve automatically,
+          // same as the ordinary binary path already does at subset===1.
+          ctx.state.level++;
+          finishGame(ctx, remaining, false);
+        } else {
+          ctx.state.endgame.candidates = remaining;
+          ctx.state.inputLocked = false;
+          paintEndgame(ctx);
+        }
+      }, 380);
+    }
   }
 
   function onCountryClick(ctx, idx) {
     if (ctx.hud.isWinShown() || ctx.state.inputLocked) return;
+    if (ctx.state.endgame) { handleEndgameClick(ctx, idx); return; }
     const step = ctx.state.path[ctx.state.level];
     if (!step) return;
 
@@ -137,6 +223,7 @@
     const feats = finalSet.map(i => ctx.data.features[i]);
     const newProj = ctx.map.buildProjection(feats);
     const finalIdxSet = new Set(finalSet);
+    ctx.state.endgame = null;
     ctx.map.animateToProjection(newProj, () => {
       ctx.map.paintClasses({
         'group-a': () => false,
@@ -168,7 +255,7 @@
       const pool = GN.progression.buildPool(ctx.data.playableIndices);
       ctx.state = {
         path: null, level: 0, targetIdx: null, guessMode: false, inputLocked: true,
-        pool,
+        endgame: null, pool,
       };
       GN.progression.reset();
       ctx.hud.setStats([
@@ -177,12 +264,7 @@
         { id: 'points', value: '0', label: 'Points', cls: 'stat-points' },
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);
-      ctx.hud.setLegend(
-        '<span class="a"><span class="swatch"></span>Region A</span>' +
-        '<span class="b"><span class="swatch"></span>Region B</span>' +
-        '<span class="g"><span class="swatch"></span>Guessable</span>' +
-        '<span class="elim"><span class="swatch"></span>Eliminated</span>'
-      );
+      ctx.hud.setLegend(STANDARD_LEGEND);
       ctx.hud.setPanel(
         '<button class="hud-btn" id="guess-btn" title="Guess the exact country directly, without narrowing">' +
         '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none"/></svg>' +
@@ -196,6 +278,10 @@
     teardown(ctx) {
       ctx.hud.setPanel('');
       ctx.hud.setLegend('');
+      // --narrow-progress lives on the shared #map SVG, not anything
+      // narrow.js-scoped — leaving it behind would tint group-a/group-b in
+      // whichever mode is entered next.
+      ctx.map.svg.style('--narrow-progress', null);
     },
     onMapClick(ctx, idx) { onCountryClick(ctx, idx); },
   };

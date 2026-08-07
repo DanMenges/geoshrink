@@ -343,6 +343,7 @@
     else if (outcome.type === 'partial') xpGain = Math.round(8 * (outcome.partialRatio != null ? outcome.partialRatio : 0.5));
     xpGain = Math.round(xpGain * tier.xpMult);
     const xpResult = addXp(xpGain);
+    if (GN.hud && GN.hud.refreshLevelChip) GN.hud.refreshLevelChip();
     if (xpResult.leveledUp && GN.hud) {
       GN.hud.showToast('Level up! You’re now Level ' + xpResult.level + '.');
     }

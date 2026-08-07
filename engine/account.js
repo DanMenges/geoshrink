@@ -303,7 +303,14 @@
         sessionStorage.removeItem(PENDING_DELETE_KEY);
         return user.delete().then(() => GN.hud.showToast('Account deleted.'));
       }
-    }).catch((err) => console.error('Redirect sign-in failed:', err));
+    }).catch((err) => {
+      // Google's redirect flow can surface a failure here (via
+      // getRedirectResult) rather than through signInWithGoogle()'s own
+      // returned promise — without this, an error like "provider not
+      // enabled" showed no feedback at all instead of a toast.
+      console.error('Redirect sign-in failed:', err);
+      GN.hud.showToast(friendlyError(err));
+    });
   } else if (chipEl) {
     chipEl.style.display = 'none';
   }

@@ -50,6 +50,7 @@
     const newCtx = buildContext(options || {});
     current = { def, ctx: newCtx, id: modeId, startOptions: options };
     GN.hud.setModeTitle(def.title || '');
+    GN.hud.refreshLevelChip();
     def.setup(newCtx);
   }
 

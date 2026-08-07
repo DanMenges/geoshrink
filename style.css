@@ -121,9 +121,18 @@ svg#map { display: block; width: 100%; height: 100%; }
 }
 :root[data-theme="dark"] .country-label { fill: rgba(255,255,255,0.88); stroke: rgba(0,0,0,0.65); }
 
-.country.group-a { fill: var(--group-a); cursor: pointer; }
-.country.group-b { fill: var(--group-b); cursor: pointer; }
-.country.guessable { fill: var(--guessable); cursor: pointer; }
+/* --narrow-progress (0 at the start of a search, toward 1 as it narrows) is
+   set by modes/narrow.js on #map, using the same progress figure already
+   driving the mission-banner progress bar — colors start a little washed
+   out and become fully vivid as the search closes in, echoing "getting
+   warmer." Left unset (the default, 1) by every other mode, so this is
+   purely additive for Geo Shrink and changes nothing elsewhere. Only the
+   flat/default look (Classic) picks this up — the gradient-fill themes
+   (Coral Reef, Dinosaur) and Population's own pop-based tint keep their own
+   distinct looks rather than fighting two color modulations at once. */
+.country.group-a { fill: color-mix(in srgb, var(--group-a) calc(55% + var(--narrow-progress, 1) * 45%), white); cursor: pointer; }
+.country.group-b { fill: color-mix(in srgb, var(--group-b) calc(55% + var(--narrow-progress, 1) * 45%), white); cursor: pointer; }
+.country.guessable { fill: color-mix(in srgb, var(--guessable) calc(55% + var(--narrow-progress, 1) * 45%), white); cursor: pointer; }
 /* "Shown for context, not a click target this round" — e.g. Compass Quiz's
    and Size Showdown's non-highlighted crowd, or Capital Match's whole map
    (answers come from the button choices, not map clicks there). Distinct
@@ -328,6 +337,27 @@ svg#map { display: block; width: 100%; height: 100%; }
 .stat-chip .v { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); }
 .stat-chip .l { font-size: 9.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
 .stat-chip.stat-points .v { color: var(--guessable); }
+
+/* Live in-game echo of the home screen's progression banner — XP is earned
+   continuously during play, so the payoff (the bar creeping toward a level
+   up) should be visible while playing, not just when you go back to Home. */
+.hud-level-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  min-width: 56px;
+}
+.hud-level-top { display: flex; align-items: baseline; gap: 3px; }
+.hud-level-top span:first-child { font-size: 14px; font-weight: 700; color: var(--guessable); font-variant-numeric: tabular-nums; }
+.hud-level-word { font-size: 8.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.hud-level-track { height: 4px; border-radius: 999px; background: var(--eliminated-fill); overflow: hidden; width: 100%; }
+.hud-level-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--group-a), var(--guessable)); width: 0%; transition: width 500ms ease; }
 
 .hud-mission {
   max-width: min(92vw, 560px);
@@ -1008,6 +1038,8 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .stat-chip { min-width: 40px; padding: 4px 7px; }
   .stat-chip .v { font-size: 12.5px; }
   .stat-chip .l { font-size: 8.5px; }
+  .hud-level-chip { min-width: 40px; padding: 4px 7px; }
+  .hud-level-top span:first-child { font-size: 12.5px; }
   .wallet-chip { padding: 6px 9px; font-size: 12px; }
   .hud-mission { padding: 8px 14px; }
   .find { font-size: 13px; }
