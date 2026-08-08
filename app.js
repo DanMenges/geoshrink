@@ -30,15 +30,49 @@
     fetch('data/countries-110m.json').then(r => r.json()),
     fetch('data/name-to-iso3.json').then(r => r.json()).catch(() => ({})),
     fetch('data/country-meta.json').then(r => r.json()).catch(() => ({ countries: {} })),
+    fetch('data/countries-extra.json').then(r => r.json()).catch(() => ({ features: [] })),
   ])
-    .then(([topology, nameToIso3, metaFile]) => {
+    .then(([topology, nameToIso3, metaFile, extra]) => {
       const geoms = topology.objects.countries.geometries;
-      const features = topojson.feature(topology, topology.objects.countries).features;
-      const names = geoms.map(g => g.properties.name);
+      const baseFeatures = topojson.feature(topology, topology.objects.countries).features;
+      const baseNames = geoms.map(g => g.properties.name);
+
+      // Natural Earth's 110m admin-0 set drops a couple dozen genuinely small
+      // sovereign countries entirely (Vatican, San Marino, Monaco, Singapore,
+      // Malta, Nauru, ...) -- too small to matter at world-map scale, but
+      // real countries a "guess the country" game shouldn't be missing.
+      // data/countries-extra.json is a small plain-GeoJSON supplement (not
+      // topojson -- decoded once from countries-50m.json's arcs, which does
+      // have them) appended after the base roster so every existing
+      // index-based array below just extends naturally, no special-casing.
+      const extraFeatures = extra.features || [];
+      const extraNames = extraFeatures.map(f => f.properties.name);
+
+      const features = baseFeatures.concat(extraFeatures);
+      const names = baseNames.concat(extraNames);
       const areas = features.map(f => d3.geoArea(f));
       const centroids = features.map(f => d3.geoCentroid(f));
-      const neighbors = topojson.neighbors(geoms);
       const playableIndices = names.map((_, i) => i).filter(i => names[i] !== 'Antarctica');
+
+      // topojson.neighbors() only understands real shared-arc topology, which
+      // the plain-GeoJSON extras don't participate in -- they start with no
+      // detected neighbors, then this short hardcoded list patches in the
+      // handful that actually share a land border with an existing country
+      // (everything else added here is an island with none).
+      const neighbors = topojson.neighbors(geoms).concat(extraFeatures.map(() => []));
+      const EXTRA_LAND_BORDERS = [
+        ['Vatican City', 'Italy'], ['San Marino', 'Italy'],
+        ['Monaco', 'France'],
+        ['Andorra', 'France'], ['Andorra', 'Spain'],
+        ['Liechtenstein', 'Switzerland'], ['Liechtenstein', 'Austria'],
+      ];
+      const idxByName = new Map(names.map((n, i) => [n, i]));
+      EXTRA_LAND_BORDERS.forEach(([a, b]) => {
+        const ia = idxByName.get(a), ib = idxByName.get(b);
+        if (ia == null || ib == null) return;
+        if (!neighbors[ia].includes(ib)) neighbors[ia].push(ib);
+        if (!neighbors[ib].includes(ia)) neighbors[ib].push(ia);
+      });
 
       const countries = metaFile.countries || {};
       const iso3ByIdx = names.map((n) => nameToIso3[n] || null);

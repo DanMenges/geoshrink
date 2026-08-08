@@ -32,6 +32,16 @@
    "population": 2800000,
    "subregion": "Southeast Europe"
   },
+  "AND": {
+   "capital": "Andorra la Vella",
+   "continent": "Europe",
+   "iso2": "ad",
+   "orgs": [
+    "UN"
+   ],
+   "population": 89000,
+   "subregion": "Southern Europe"
+  },
   "ARE": {
    "capital": "Abu Dhabi",
    "continent": "Asia",
@@ -71,6 +81,17 @@
    "orgs": [],
    "population": 1000,
    "subregion": ""
+  },
+  "ATG": {
+   "capital": "Saint John's",
+   "continent": "Americas",
+   "iso2": "ag",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 94000,
+   "subregion": "Caribbean"
   },
   "AUS": {
    "capital": "Canberra",
@@ -176,6 +197,16 @@
    "population": 6400000,
    "subregion": "Southeast Europe"
   },
+  "BHR": {
+   "capital": "Manama",
+   "continent": "Asia",
+   "iso2": "bh",
+   "orgs": [
+    "UN"
+   ],
+   "population": 1600000,
+   "subregion": "Western Asia"
+  },
   "BHS": {
    "capital": "Nassau",
    "continent": "Americas",
@@ -239,6 +270,17 @@
    ],
    "population": 216000000,
    "subregion": "South America"
+  },
+  "BRB": {
+   "capital": "Bridgetown",
+   "continent": "Americas",
+   "iso2": "bb",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 280000,
+   "subregion": "Caribbean"
   },
   "BRN": {
    "capital": "Bandar Seri Begawan",
@@ -385,6 +427,28 @@
    "population": 52000000,
    "subregion": "South America"
   },
+  "COM": {
+   "capital": "Moroni",
+   "continent": "Africa",
+   "iso2": "km",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 900000,
+   "subregion": "Eastern Africa"
+  },
+  "CPV": {
+   "capital": "Praia",
+   "continent": "Africa",
+   "iso2": "cv",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 610000,
+   "subregion": "Western Africa"
+  },
   "CRI": {
    "capital": "San José",
    "continent": "Americas",
@@ -454,6 +518,17 @@
    ],
    "population": 1100000,
    "subregion": "Eastern Africa"
+  },
+  "DMA": {
+   "capital": "Roseau",
+   "continent": "Americas",
+   "iso2": "dm",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 74000,
+   "subregion": "Caribbean"
   },
   "DNK": {
    "capital": "Copenhagen",
@@ -618,6 +693,16 @@
    "population": 68000000,
    "subregion": "Western Europe"
   },
+  "FSM": {
+   "capital": "Palikir",
+   "continent": "Oceania",
+   "iso2": "fm",
+   "orgs": [
+    "UN"
+   ],
+   "population": 114000,
+   "subregion": "Micronesia"
+  },
   "GAB": {
    "capital": "Libreville",
    "continent": "Africa",
@@ -723,6 +808,17 @@
    ],
    "population": 10400000,
    "subregion": "Southern Europe"
+  },
+  "GRD": {
+   "capital": "St. George's",
+   "continent": "Americas",
+   "iso2": "gd",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 128000,
+   "subregion": "Caribbean"
   },
   "GRL": {
    "capital": "Nuuk",
@@ -971,6 +1067,28 @@
    "population": 17000000,
    "subregion": "South-Eastern Asia"
   },
+  "KIR": {
+   "capital": "Tarawa",
+   "continent": "Oceania",
+   "iso2": "ki",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 138000,
+   "subregion": "Micronesia"
+  },
+  "KNA": {
+   "capital": "Basseterre",
+   "continent": "Americas",
+   "iso2": "kn",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 48000,
+   "subregion": "Caribbean"
+  },
   "KOR": {
    "capital": "Seoul",
    "continent": "Asia",
@@ -1036,6 +1154,28 @@
    ],
    "population": 6900000,
    "subregion": "Northern Africa"
+  },
+  "LCA": {
+   "capital": "Castries",
+   "continent": "Americas",
+   "iso2": "lc",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 180000,
+   "subregion": "Caribbean"
+  },
+  "LIE": {
+   "capital": "Vaduz",
+   "continent": "Europe",
+   "iso2": "li",
+   "orgs": [
+    "UN",
+    "SCHENGEN"
+   ],
+   "population": 40000,
+   "subregion": "Western Europe"
   },
   "LKA": {
    "capital": "Colombo",
@@ -1113,6 +1253,16 @@
    "population": 37800000,
    "subregion": "Northern Africa"
   },
+  "MCO": {
+   "capital": "Monaco",
+   "continent": "Europe",
+   "iso2": "mc",
+   "orgs": [
+    "UN"
+   ],
+   "population": 38000,
+   "subregion": "Western Europe"
+  },
   "MDA": {
    "capital": "Chișinău",
    "continent": "Europe",
@@ -1134,6 +1284,17 @@
    "population": 30000000,
    "subregion": "Eastern Africa"
   },
+  "MDV": {
+   "capital": "Male",
+   "continent": "Asia",
+   "iso2": "mv",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 530000,
+   "subregion": "Southern Asia"
+  },
   "MEX": {
    "capital": "Mexico City",
    "continent": "Americas",
@@ -1144,6 +1305,16 @@
    ],
    "population": 128000000,
    "subregion": "North America"
+  },
+  "MHL": {
+   "capital": "Majuro",
+   "continent": "Oceania",
+   "iso2": "mh",
+   "orgs": [
+    "UN"
+   ],
+   "population": 40000,
+   "subregion": "Micronesia"
   },
   "MKD": {
    "capital": "Skopje",
@@ -1166,6 +1337,20 @@
    ],
    "population": 22000000,
    "subregion": "Western Africa"
+  },
+  "MLT": {
+   "capital": "Valletta",
+   "continent": "Europe",
+   "iso2": "mt",
+   "orgs": [
+    "UN",
+    "EU",
+    "EUROZONE",
+    "SCHENGEN",
+    "COMMONWEALTH"
+   ],
+   "population": 550000,
+   "subregion": "Southern Europe"
   },
   "MMR": {
    "capital": "Naypyidaw",
@@ -1221,6 +1406,18 @@
    ],
    "population": 4900000,
    "subregion": "Western Africa"
+  },
+  "MUS": {
+   "capital": "Port Louis",
+   "continent": "Africa",
+   "iso2": "mu",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 1300000,
+   "subregion": "Eastern Africa"
   },
   "MWI": {
    "capital": "Lilongwe",
@@ -1335,6 +1532,17 @@
    "population": 30000000,
    "subregion": "Southern Asia"
   },
+  "NRU": {
+   "capital": "Yaren",
+   "continent": "Oceania",
+   "iso2": "nr",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 12000,
+   "subregion": "Micronesia"
+  },
   "NZL": {
    "capital": "Wellington",
    "continent": "Oceania",
@@ -1397,6 +1605,16 @@
    ],
    "population": 117000000,
    "subregion": "South-Eastern Asia"
+  },
+  "PLW": {
+   "capital": "Ngerulmud",
+   "continent": "Oceania",
+   "iso2": "pw",
+   "orgs": [
+    "UN"
+   ],
+   "population": 18000,
+   "subregion": "Micronesia"
   },
   "PNG": {
    "capital": "Port Moresby",
@@ -1553,6 +1771,18 @@
    "population": 18000000,
    "subregion": "Western Africa"
   },
+  "SGP": {
+   "capital": "Singapore",
+   "continent": "Asia",
+   "iso2": "sg",
+   "orgs": [
+    "UN",
+    "ASEAN",
+    "COMMONWEALTH"
+   ],
+   "population": 5900000,
+   "subregion": "South-Eastern Asia"
+  },
   "SLB": {
    "capital": "Honiara",
    "continent": "Oceania",
@@ -1586,6 +1816,16 @@
    "population": 6300000,
    "subregion": "Central America"
   },
+  "SMR": {
+   "capital": "San Marino",
+   "continent": "Europe",
+   "iso2": "sm",
+   "orgs": [
+    "UN"
+   ],
+   "population": 34000,
+   "subregion": "Southern Europe"
+  },
   "SOM": {
    "capital": "Mogadishu",
    "continent": "Africa",
@@ -1616,6 +1856,17 @@
     "AU"
    ],
    "population": 11000000,
+   "subregion": "Middle Africa"
+  },
+  "STP": {
+   "capital": "Sao Tome",
+   "continent": "Africa",
+   "iso2": "st",
+   "orgs": [
+    "UN",
+    "AU"
+   ],
+   "population": 230000,
    "subregion": "Middle Africa"
   },
   "SUR": {
@@ -1680,6 +1931,18 @@
    ],
    "population": 1200000,
    "subregion": "Southern Africa"
+  },
+  "SYC": {
+   "capital": "Victoria",
+   "continent": "Africa",
+   "iso2": "sc",
+   "orgs": [
+    "UN",
+    "AU",
+    "COMMONWEALTH"
+   ],
+   "population": 109000,
+   "subregion": "Eastern Africa"
   },
   "SYR": {
    "capital": "Damascus",
@@ -1753,6 +2016,17 @@
    ],
    "population": 1360000,
    "subregion": "South-Eastern Asia"
+  },
+  "TON": {
+   "capital": "Nuku'alofa",
+   "continent": "Oceania",
+   "iso2": "to",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 104000,
+   "subregion": "Polynesia"
   },
   "TTO": {
    "capital": "Port of Spain",
@@ -1871,6 +2145,25 @@
    "population": 35600000,
    "subregion": "Central Asia"
   },
+  "VAT": {
+   "capital": "Vatican City",
+   "continent": "Europe",
+   "iso2": "va",
+   "orgs": [],
+   "population": 800,
+   "subregion": "Southern Europe"
+  },
+  "VCT": {
+   "capital": "Kingstown",
+   "continent": "Americas",
+   "iso2": "vc",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 100000,
+   "subregion": "Caribbean"
+  },
   "VEN": {
    "capital": "Caracas",
    "continent": "Americas",
@@ -1902,6 +2195,17 @@
    ],
    "population": 330000,
    "subregion": "Melanesia"
+  },
+  "WSM": {
+   "capital": "Apia",
+   "continent": "Oceania",
+   "iso2": "ws",
+   "orgs": [
+    "UN",
+    "COMMONWEALTH"
+   ],
+   "population": 210000,
+   "subregion": "Polynesia"
   },
   "YEM": {
    "capital": "Sana'a",
