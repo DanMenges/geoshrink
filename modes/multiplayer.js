@@ -353,14 +353,29 @@
   // Zooms onto just the round's target country and flashes it green so
   // observers can clearly see which country it actually was, even though
   // the last narrowing step usually left 2 candidates on screen.
+  // A very slight pull-back from a tight single-country fit, anchored on the
+  // country's own on-screen position (via its rendered path centroid, not
+  // its geographic one — accurate regardless of shape) so it doesn't jump
+  // around when the scale changes. Deliberately restrained compared to Geo
+  // Shrink's full zoom-out to its round's whole pool: this reveal sits next
+  // to a small sidebar panel, not a full-screen win moment, so it should
+  // stay proportionally modest — just enough breathing room to see the
+  // country in a little geographic context.
+  const REVEAL_ZOOM_OUT_FACTOR = 0.7;
   function revealRoundTarget(ctx, room) {
     const roundData = room.rounds && room.rounds[room.currentRound];
     if (!roundData || !ctx) return '';
     const target = roundData.target;
     const feat = ctx.data.features[target];
     if (!feat) return ctx.data.names[target] || '';
-    const newProj = ctx.map.buildProjection([feat]);
-    ctx.map.animateToProjection(newProj, () => {
+    const tightProj = ctx.map.buildProjection([feat]);
+    const [anchorX, anchorY] = d3.geoPath(tightProj).centroid(feat);
+    const [tx, ty] = tightProj.translate();
+    tightProj.scale(tightProj.scale() * REVEAL_ZOOM_OUT_FACTOR).translate([
+      REVEAL_ZOOM_OUT_FACTOR * tx + (1 - REVEAL_ZOOM_OUT_FACTOR) * anchorX,
+      REVEAL_ZOOM_OUT_FACTOR * ty + (1 - REVEAL_ZOOM_OUT_FACTOR) * anchorY,
+    ]);
+    ctx.map.animateToProjection(tightProj, () => {
       ctx.map.paintClasses({
         'group-a': () => false,
         'group-b': () => false,

@@ -1039,23 +1039,29 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
    through to the map" pointer-events model, just a taller panel. */
 .mp-round-summary-panel {
   display: none;
-  width: 300px;
+  width: 250px;
   max-width: 100%;
-  max-height: min(70vh, 560px);
+  max-height: min(60vh, 460px);
   overflow-y: auto;
   align-self: flex-end;
-  background: var(--page-plane);
+  /* Translucent + blurred rather than a solid opaque card — the map (and
+     the highlighted country on it) should stay the visually dominant thing
+     during the intermission, this is a supporting readout beside it. */
+  background: color-mix(in srgb, var(--page-plane) 82%, transparent);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  padding: 16px 18px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(11,11,11,0.05), 0 4px 12px rgba(11,11,11,0.08);
+  padding: 11px 13px;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   text-align: left;
+  font-size: 12.5px;
 }
 .mp-round-summary-panel.show { display: flex; animation: overlayIn 260ms ease; }
-.mp-round-summary-panel h2 { margin: 0; font-size: 16px; color: var(--text-primary); text-align: center; }
-.mp-round-summary-target { font-size: 13px; color: var(--text-secondary); text-align: center; }
+.mp-round-summary-panel h2 { margin: 0; font-size: 13.5px; color: var(--text-primary); text-align: center; }
+.mp-round-summary-target { font-size: 11.5px; color: var(--text-secondary); text-align: center; }
 .mp-round-summary-target b { color: var(--good); font-weight: 800; }
 .mp-round-summary-list { display: flex; flex-direction: column; gap: 8px; }
 .mp-summary-row {
@@ -1246,7 +1252,7 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .find b { font-size: 15px; }
   .find-flag-img { height: 48px; }
   .mp-scoreboard { width: 100%; align-self: stretch; } /* right-docked sidebar doesn't fit next to a near-full-width mission banner on phones — stack instead */
-  .mp-round-summary-panel { width: 100%; align-self: stretch; max-height: 46vh; }
+  .mp-round-summary-panel { width: 100%; align-self: stretch; max-height: 34vh; }
   .grw-globe-wrap { width: 32px; height: 32px; }
   .grw-repair-btn { padding: 6px 8px; font-size: 11px; }
   .collections-inner { padding: 16px 14px 32px; }
