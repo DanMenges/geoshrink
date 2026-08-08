@@ -1,7 +1,11 @@
 .viz-root {
   color-scheme: light;
-  --surface-1:      #fcfcfb;
-  --page-plane:     #f9f9f7;
+  /* Slightly darkened off-white/soft-blue palette rather than near-white —
+     the original #fcfcfb/#f9f9f7/#dfeaf9 read as very bright/glary for
+     players who prefer light mode but not blinding-white. Text, borders,
+     and every accent color are untouched — only the big background fields. */
+  --surface-1:      #f3f3f0;
+  --page-plane:     #eeeeea;
   --text-primary:   #0b0b0b;
   --text-secondary: #52514e;
   --text-muted:     #898781;
@@ -11,7 +15,7 @@
   --guessable:      #4a3aa7;   /* series slot 7: violet */
   --eliminated-fill:#e1e0d9;
   --eliminated-stroke: #c3c2b7;
-  --ocean:          #dfeaf9;
+  --ocean:          #d2e0f2;
   --graticule:      #c7d6ea;
   --good:           #0ca30c;
   --critical:       #d03b3b;
@@ -620,16 +624,34 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
      New Game, Fullscreen, mode panel) must stay clickable while a win
      screen is showing, not get trapped behind it. */
   z-index: 3;
-  background: color-mix(in srgb, var(--surface-1) 90%, transparent);
   display: none;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  /* Non-blocking outside its own card (same "gaps pass clicks through"
+     model as .hud/.hud-stack) -- players asked to still be able to drag
+     /rotate/zoom the map and look at the result while this is showing,
+     not get stuck behind a full-screen modal. */
+  pointer-events: none;
+}
+.overlay.show { display: flex; }
+.overlay-card {
+  pointer-events: auto;
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 22px 26px;
+  display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   text-align: center;
-  padding: 20px;
+  max-width: min(92vw, 420px);
+  animation: overlayIn 320ms ease;
 }
-.overlay.show { display: flex; animation: overlayIn 320ms ease; }
 @keyframes overlayIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
@@ -702,6 +724,17 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 .theme-swatch-scifi span { box-shadow: 0 0 0 1px var(--border) inset, 0 0 6px 2px currentColor; animation: scifiPulse 3.2s ease-in-out infinite; }
 .theme-swatch-scifi span:last-child { animation-delay: 1.6s; }
 .theme-swatch-population span { box-shadow: 0 0 0 1px var(--border) inset, 0 1px 3px 0 color-mix(in srgb, currentColor 70%, transparent); }
+.bg-theme-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--border) inset;
+}
+.bg-theme-swatch span { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255,255,255,0.18) inset; }
 .theme-label { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
 .shop-equipped { font-size: 11px; font-weight: 700; color: var(--good); }
 .shop-btn { font-size: 12px; padding: 6px 12px; }
@@ -967,20 +1000,27 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   border-top: 1px solid var(--border);
 }
 .home-footer-note { font-size: 11.5px; color: var(--text-muted); }
-.bg-picker { display: flex; align-items: center; gap: 6px; }
+.bg-picker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .bg-picker-label { font-size: 12px; color: var(--text-secondary); margin-right: 2px; }
+.bg-chip-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .bg-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--surface-1);
   color: var(--text-secondary);
   cursor: pointer;
 }
 .bg-chip.active { background: var(--group-a); border-color: var(--group-a); color: #ffffff; }
+.bg-chip.locked { opacity: 0.65; }
+.bg-chip.locked .tier-chip-caption { color: var(--critical); }
 
 /* multiplayer -------------------------------------------------------------- */
 .multiplayer-screen {

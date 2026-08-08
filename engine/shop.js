@@ -4,6 +4,7 @@
   const overlay = document.getElementById('shop-overlay');
   const balanceEl = document.getElementById('shop-balance-amount');
   const themesEl = document.getElementById('shop-themes');
+  const bgThemesEl = document.getElementById('shop-bg-themes');
   const shieldEl = document.getElementById('shop-shield');
   const repairToolsEl = document.getElementById('shop-repair-tools');
   const xpPotionsEl = document.getElementById('shop-xp-potions');
@@ -53,6 +54,51 @@
         GN.progression.equipTheme(btn.getAttribute('data-equip'));
         GN.hud.showToast('Theme equipped!');
         renderThemes();
+      });
+    });
+  }
+
+  function renderBackgroundThemes() {
+    const equipped = GN.progression.getPageTheme();
+    const coins = GN.progression.getCoins();
+    // Only the purchasable ones show up here — Auto/Light/Dark are free and
+    // live on the Home footer picker instead, same split as this shop
+    // having nothing for e.g. "Classic" map colors (already owned by default).
+    const html = GN.progression.getBackgroundThemeCatalog().filter((t) => t.price > 0).map((t) => {
+      const owned = GN.progression.isBackgroundThemeOwned(t.id);
+      const isEquipped = t.id === equipped;
+      let action;
+      if (isEquipped) action = '<span class="shop-equipped">Equipped</span>';
+      else if (owned) action = '<button class="hud-btn shop-btn" data-equip-bg="' + t.id + '">Equip</button>';
+      else action = '<button class="hud-btn shop-btn" data-buy-bg="' + t.id + '"' + (coins < t.price ? ' disabled' : '') + '>Buy — ' + t.price + '</button>';
+      return '<div class="theme-card' + (isEquipped ? ' equipped' : '') + '">' +
+        '<span class="bg-theme-swatch" style="background:' + t.palette.pagePlane + '">' +
+        '<span style="background:' + t.palette.surface1 + '"></span>' +
+        '<span style="background:' + t.palette.ocean + '"></span>' +
+        '</span>' +
+        '<span class="theme-label">' + t.label + '</span>' +
+        action +
+        '</div>';
+    }).join('');
+    bgThemesEl.innerHTML = html;
+    bgThemesEl.querySelectorAll('[data-buy-bg]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-buy-bg');
+        if (GN.progression.buyBackgroundTheme(id)) {
+          GN.hud.showToast('Background theme unlocked!');
+          render();
+        } else {
+          GN.hud.showToast('Not enough coins.');
+        }
+      });
+    });
+    bgThemesEl.querySelectorAll('[data-equip-bg]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        GN.progression.setPageTheme(btn.getAttribute('data-equip-bg'));
+        GN.theme.apply();
+        GN.hud.showToast('Background equipped!');
+        renderBackgroundThemes();
+        if (GN.home) GN.home.renderBgPicker(); // keep the Home footer's picker in sync too
       });
     });
   }
@@ -122,11 +168,13 @@
   function render() {
     balanceEl.textContent = GN.progression.getCoins();
     renderThemes();
+    renderBackgroundThemes();
     renderShield();
     renderRepairTools();
     renderXpPotions();
     refreshWalletDisplay();
     if (GN.home) GN.home.renderLevelBadge();
+    if (GN.home) GN.home.renderBgPicker();
   }
 
   function show() {

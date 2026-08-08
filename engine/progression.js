@@ -85,6 +85,7 @@
     if (!data.progress.passports) data.progress.passports = {};
     if (data.progress.repairTools == null) data.progress.repairTools = 0;
     if (!data.progress.expeditionRecent) data.progress.expeditionRecent = [];
+    if (!data.progress.ownedBackgroundThemes) data.progress.ownedBackgroundThemes = [];
     // Free themes are granted unconditionally, including retroactively to
     // existing saves — nothing with price 0 should ever need "buying".
     FREE_THEME_IDS.forEach((id) => {
@@ -293,20 +294,60 @@
     saveProgress(progress);
   }
 
-  // Page background: 'auto' follows the OS's prefers-color-scheme (the
-  // long-standing default), 'light'/'dark' force one regardless — for
+  // Background themes. 'auto'/'light'/'dark' are free luminance modes (for
   // players who don't want the app pulled into dark mode just because their
-  // OS is. See engine/theme.js's applyPageTheme(), which actually sets the
-  // data-theme attribute this reads back from CSS.
-  const PAGE_THEMES = ['auto', 'light', 'dark'];
+  // OS is) — see engine/theme.js's applyPageTheme(), which sets the
+  // data-theme attribute these read back from CSS. 'blue'/'green'/'red' are
+  // purchasable full custom palettes that override the page chrome outright
+  // via inline custom properties, regardless of light/dark — same "cosmetic,
+  // separate from gameplay colors" split as the map color THEMES above:
+  // deliberately doesn't touch --group-a/--group-b/--guessable/--good/
+  // --critical/--cont-*, only the page's own surface/text/ocean colors.
+  const BACKGROUND_THEMES = [
+    { id: 'auto', label: 'Auto', price: 0 },
+    { id: 'light', label: 'Light', price: 0 },
+    { id: 'dark', label: 'Dark', price: 0 },
+    { id: 'blue', label: 'Blue', price: 5000, palette: {
+      surface1: '#101c33', pagePlane: '#0a1424', textPrimary: '#eef3fb', textSecondary: '#a9bedd', textMuted: '#6e84a8',
+      border: 'rgba(255,255,255,0.12)', ocean: '#0c1930', graticule: '#1f3358',
+      shadow: '0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.55)',
+    } },
+    { id: 'green', label: 'Dark Green', price: 7500, palette: {
+      surface1: '#10201a', pagePlane: '#0a1712', textPrimary: '#eaf5ee', textSecondary: '#a8c9b6', textMuted: '#6d8f7b',
+      border: 'rgba(255,255,255,0.12)', ocean: '#0c1a15', graticule: '#1e3a2c',
+      shadow: '0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.55)',
+    } },
+    { id: 'red', label: 'Futuristic Red', price: 10000, palette: {
+      surface1: '#1c0f10', pagePlane: '#120a0a', textPrimary: '#ffeef0', textSecondary: '#e0a3ab', textMuted: '#9c6a70',
+      border: 'rgba(255,80,80,0.18)', ocean: '#150a0b', graticule: '#3a1a1e',
+      shadow: '0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(220,40,60,0.25)',
+    } },
+  ];
+  const FREE_BACKGROUND_IDS = BACKGROUND_THEMES.filter((t) => t.price === 0).map((t) => t.id);
+  function getBackgroundThemeCatalog() { return BACKGROUND_THEMES; }
+  function isBackgroundThemeOwned(id) {
+    if (FREE_BACKGROUND_IDS.includes(id)) return true;
+    return (loadProgress().ownedBackgroundThemes || []).includes(id);
+  }
   function getPageTheme() {
     const t = loadProgress().pageTheme;
-    return PAGE_THEMES.includes(t) ? t : 'auto';
+    return BACKGROUND_THEMES.some((b) => b.id === t) ? t : 'auto';
   }
   function setPageTheme(id) {
-    if (!PAGE_THEMES.includes(id)) return false;
+    if (!BACKGROUND_THEMES.some((b) => b.id === id)) return false;
+    if (!isBackgroundThemeOwned(id)) return false;
     const progress = loadProgress();
     progress.pageTheme = id;
+    saveProgress(progress);
+    return true;
+  }
+  function buyBackgroundTheme(id) {
+    const theme = BACKGROUND_THEMES.find((b) => b.id === id);
+    if (!theme || theme.price === 0 || isBackgroundThemeOwned(id)) return false;
+    if (!spendCoins(theme.price)) return false;
+    const progress = loadProgress();
+    if (!progress.ownedBackgroundThemes) progress.ownedBackgroundThemes = [];
+    progress.ownedBackgroundThemes.push(id);
     saveProgress(progress);
     return true;
   }
@@ -592,5 +633,6 @@
     getThemeCatalog, isThemeOwned, getEquippedThemeId, getEquippedTheme, buyTheme, equipTheme,
     getPassportTier, getPassportTierByIso3, recordFlawlessCompletion, getPassportCollectedCount,
     getShowFlags, setShowFlags, getPageTheme, setPageTheme,
+    getBackgroundThemeCatalog, isBackgroundThemeOwned, buyBackgroundTheme,
   };
 })();

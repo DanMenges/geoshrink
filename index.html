@@ -89,22 +89,26 @@
       </div>
 
       <div class="overlay" id="win-overlay">
-        <svg class="medal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-          <circle cx="12" cy="9" r="6.5"/>
-          <path d="m8 14.5-1.5 6 5.5-2.7 5.5 2.7-1.5-6" stroke-linejoin="round"/>
-          <path class="medal-check" d="m9.3 9 1.9 1.9L15 7" stroke-linecap="round" stroke-linejoin="round"/>
-          <path class="medal-x" d="m9.3 6.5 5.4 5.4M14.7 6.5l-5.4 5.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <div class="big" id="win-title"></div>
-        <div class="sub" id="win-sub"></div>
-        <div class="win-bonus" id="win-bonus"></div>
-        <button class="hud-btn" id="win-newgame">Play again</button>
+        <div class="overlay-card">
+          <svg class="medal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <circle cx="12" cy="9" r="6.5"/>
+            <path d="m8 14.5-1.5 6 5.5-2.7 5.5 2.7-1.5-6" stroke-linejoin="round"/>
+            <path class="medal-check" d="m9.3 9 1.9 1.9L15 7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="medal-x" d="m9.3 6.5 5.4 5.4M14.7 6.5l-5.4 5.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="big" id="win-title"></div>
+          <div class="sub" id="win-sub"></div>
+          <div class="win-bonus" id="win-bonus"></div>
+          <button class="hud-btn" id="win-newgame">Play again</button>
+        </div>
       </div>
 
       <div class="overlay" id="round-result-overlay">
-        <div class="big" id="round-result-title"></div>
-        <div class="sub" id="round-result-sub"></div>
-        <button class="hud-btn" id="round-result-next">Next round</button>
+        <div class="overlay-card">
+          <div class="big" id="round-result-title"></div>
+          <div class="sub" id="round-result-sub"></div>
+          <button class="hud-btn" id="round-result-next">Next round</button>
+        </div>
       </div>
 
     </div>
@@ -185,11 +189,9 @@
             </span>
             Show flags
           </label>
-          <div class="bg-picker" id="bg-picker" title="Background — Light forces light mode even if your OS is set to dark">
+          <div class="bg-picker" id="bg-picker" title="Background">
             <span class="bg-picker-label">Background</span>
-            <button class="bg-chip" data-page-theme="auto">Auto</button>
-            <button class="bg-chip" data-page-theme="light">Light</button>
-            <button class="bg-chip" data-page-theme="dark">Dark</button>
+            <div class="bg-chip-row" id="bg-chip-row"></div>
           </div>
           <span class="home-footer-note">Flags by flag-icons (MIT). Boundaries by Natural Earth. Dinosaur silhouettes via PhyloPic (CC0).</span>
         </div>
@@ -238,6 +240,11 @@
           <h3>Map color themes</h3>
           <p class="shop-hint">Cosmetic — changes Region A / Region B colors everywhere.</p>
           <div class="shop-grid" id="shop-themes"></div>
+        </div>
+        <div class="shop-section">
+          <h3>Background themes</h3>
+          <p class="shop-hint">Cosmetic — replaces the page background/chrome. Equip from Home once owned.</p>
+          <div class="shop-grid" id="shop-bg-themes"></div>
         </div>
         <div class="shop-section">
           <h3>Streak Shield</h3>

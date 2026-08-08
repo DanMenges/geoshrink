@@ -114,13 +114,32 @@
     });
   }
 
-  // Static buttons already in index.html (not regenerated per-render like
-  // renderDifficultyPicker's chips), so this just toggles .active — click
-  // listeners are wired once below, at module load.
+  // Fully regenerated per-render (mirrors renderDifficultyPicker's exact
+  // pattern) since purchasable entries (blue/green/red) need locked/owned
+  // state, not just a fixed 3-button row — click listeners are re-wired to
+  // the fresh buttons each call, same as renderDifficultyPicker/renderModeGrid.
   function renderBgPicker() {
     const selected = GN.progression.getPageTheme();
+    const html = GN.progression.getBackgroundThemeCatalog().map((t) => {
+      const owned = GN.progression.isBackgroundThemeOwned(t.id);
+      const caption = !owned ? '<span class="tier-chip-caption">' + t.price + ' coins</span>' : '';
+      return '<button class="bg-chip' + (t.id === selected ? ' active' : '') + (owned ? '' : ' locked') + '" data-page-theme="' + t.id + '">' +
+        t.label + caption +
+        '</button>';
+    }).join('');
+    document.getElementById('bg-chip-row').innerHTML = html;
     document.querySelectorAll('#bg-picker .bg-chip').forEach((btn) => {
-      btn.classList.toggle('active', btn.getAttribute('data-page-theme') === selected);
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-page-theme');
+        if (!GN.progression.isBackgroundThemeOwned(id)) {
+          const t = GN.progression.getBackgroundThemeCatalog().find((x) => x.id === id);
+          GN.hud.showToast((t ? t.label : 'This background') + ' costs ' + (t ? t.price : '?') + ' coins — buy it in the Shop.');
+          return;
+        }
+        GN.progression.setPageTheme(id);
+        GN.theme.apply();
+        renderBgPicker();
+      });
     });
   }
 
@@ -209,14 +228,6 @@
     GN.theme.apply();
   });
 
-  document.querySelectorAll('#bg-picker .bg-chip').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      GN.progression.setPageTheme(btn.getAttribute('data-page-theme'));
-      GN.theme.apply();
-      renderBgPicker();
-    });
-  });
-
   const showFlagsToggle = document.getElementById('show-flags-toggle');
   showFlagsToggle.checked = GN.progression.getShowFlags();
   showFlagsToggle.addEventListener('change', () => {
@@ -224,5 +235,5 @@
     renderModeGrid();
   });
 
-  GN.home = { show, hide, hideToOtherScreen, enterMode, renderLevelBadge };
+  GN.home = { show, hide, hideToOtherScreen, enterMode, renderLevelBadge, renderBgPicker };
 })();
