@@ -15,7 +15,7 @@
     // rule here instead of silently honoring the link.
     directModeAtLoad = '';
     history.replaceState(null, '', location.pathname + location.search);
-    GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Flag Frenzy.');
+    GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Raise the Flag.');
   } else if (directModeAtLoad && !GN.modeShell.hasMode(directModeAtLoad)) {
     // A link to a mode that's been removed since (e.g. an old #compass
     // bookmark) would otherwise throw inside modeShell.start() below —

@@ -141,11 +141,32 @@
     const newProj = ctx.map.buildProjection(feats);
     ctx.map.animateToProjection(newProj, () => {
       GN.map.paintWaterClasses(ctx.state.type, { 'water-a': () => false, 'water-b': (i) => finalSet.includes(i) });
-      GN.progression.applyOutcome({ type: 'correct', points: 50 });
+      // Reward scales with how many narrowing steps this round actually
+      // took (a full Hard-pool river narrow is a lot more work than a
+      // 3-step lake round on Easy) -- explicit xp/coins rather than
+      // applyOutcome's flat per-click default, which was tuned for
+      // single-click modes, not a multi-step narrowing sequence.
+      const steps = ctx.state.path.length;
+      const result = GN.progression.applyOutcome({
+        type: 'correct',
+        points: 30 + steps * 15,
+        xp: Math.round(10 + steps * 4),
+        coins: Math.round(3 + steps * 1.5),
+      });
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
       ctx.hud.updateStat('streak', String(GN.progression.getCurrentStreak()));
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
-      ctx.scheduleTimeout(() => startRound(ctx), 900);
+      // Same "pause, don't auto-advance" pattern as every other multi-round
+      // mode (Capital Match, Bloc Bingo, ...) -- the overlay doesn't block
+      // the map underneath (see .overlay-card in style.css), so the player
+      // can still pan/zoom to look at the answer before moving on.
+      ctx.hud.showRoundResult({
+        correct: true,
+        title: ctx.state.targetName + '!',
+        sub: '+' + result.xpGain + ' XP, +' + result.coinsGain + ' coin' + (result.coinsGain === 1 ? '' : 's') + ' — take a look before continuing.',
+        nextLabel: 'Next round',
+        onNext: () => startRound(ctx),
+      });
     });
   }
 

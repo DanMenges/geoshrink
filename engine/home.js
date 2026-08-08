@@ -28,9 +28,9 @@
   const MODE_CARDS = [
     { id: 'narrow', title: 'Geo Shrink', desc: 'The world splits in two each round — narrow down to the target country, or gamble on a direct guess.' },
     { id: 'expedition', title: 'Expedition', desc: 'Travel a random border-by-border path from an origin to a destination — click each named country to press on and collect points.' },
-    { id: 'blocs', title: 'Bloc Bingo', desc: 'Six countries, one doesn’t belong — spot the odd one out of the alliance.' },
-    { id: 'water', title: 'Water Wisdom', desc: 'Click the named river or lake — oceans and seas to come. Wrong guesses cost nothing.' },
-    { id: 'flags', title: 'Flag Frenzy', desc: 'Identify the country from its flag.' },
+    { id: 'blocs', title: 'Find the Fake', desc: 'Six countries, one doesn’t belong — spot the odd one out of the alliance.' },
+    { id: 'water', title: 'Water Wisdom', desc: 'Rivers and lakes split in two each round, Geo Shrink-style — narrow down to the target. Oceans and seas to come.' },
+    { id: 'flags', title: 'Raise the Flag', desc: 'Identify the country from its flag.' },
     { id: 'capitals', title: 'Capital Match', desc: 'Match the capital city to its country.' },
     { id: 'neighbor', title: 'Neighbor Match', desc: 'Click every country that shares a border with the reference country.' },
     { id: 'size', title: 'Size Showdown', desc: 'Quick head-to-head guesses: which country has the bigger land area?' },
@@ -208,7 +208,7 @@
       return;
     }
     if (modeId === 'flags' && !GN.progression.getShowFlags()) {
-      GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Flag Frenzy.');
+      GN.hud.showToast('Flags are turned off — enable "Show flags" on Home to play Raise the Flag.');
       return;
     }
     hide();

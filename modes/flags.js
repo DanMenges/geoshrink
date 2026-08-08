@@ -50,7 +50,7 @@
   }
 
   const mode = {
-    title: 'Flag Frenzy',
+    title: 'Raise the Flag',
     setup(ctx) {
       ctx.state = { targetIdx: null, inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();

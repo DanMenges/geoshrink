@@ -82,7 +82,7 @@
   }
 
   const mode = {
-    title: 'Bloc Bingo',
+    title: 'Find the Fake',
     setup(ctx) {
       ctx.state = { org: null, impostor: null, all: [], inputLocked: false, pool: GN.progression.buildPool(ctx.data.metaIndices) };
       GN.progression.reset();
