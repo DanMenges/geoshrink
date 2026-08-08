@@ -23,6 +23,10 @@
   const gGraticule = gFrame.append('path').attr('class', 'graticule');
   const gSphere = gFrame.append('path').attr('class', 'sphere-outline');
   const gCountries = svg.append('g').attr('class', 'countries');
+  // Nested inside gCountries (not a sibling) so it inherits the same
+  // transform gCountries gets during animateToProjection's transition,
+  // instead of visually lagging behind for the ~700ms it runs.
+  const gHitAssist = gCountries.append('g').attr('class', 'hit-assist');
   const gDino = svg.append('g').attr('class', 'dino-illustrations');
   const gLabels = svg.append('g').attr('class', 'country-labels');
   const graticuleData = d3.geoGraticule10();
@@ -141,7 +145,13 @@
   // tiny country doesn't get reset back to default on the next click.
   let rotation = [0, 0];
   let zoomFactor = 1;
-  const MIN_ZOOM = 0.6, MAX_ZOOM = 12;
+  // MAX_ZOOM raised from 12 -> 40: lets a player actually zoom in and see
+  // small-but-real-sized countries (Luxembourg, Malta, Singapore, ...) up
+  // close. It alone can't make Vatican City-scale enclaves clickable --
+  // they're several more orders of magnitude smaller than that helps with
+  // -- see updateHitAssist() in this file for the fix that actually covers
+  // those.
+  const MIN_ZOOM = 0.6, MAX_ZOOM = 40;
 
   function normalizeRotation(lambda, phi) {
     const wrapped = ((lambda % 360) + 540) % 360 - 180;
@@ -281,6 +291,7 @@
     gSphere.attr('d', pathGen({ type: 'Sphere' }));
     updateDinoPositions();
     renderLabels();
+    updateHitAssist();
   }
 
   function setProjectionImmediate(newProjection) {
@@ -325,8 +336,55 @@
     return raw.map((v) => (v == null ? 0.5 : (v - min) / span));
   }
 
+  // A handful of countries (Vatican City, San Marino, Monaco, ...) render
+  // at a fraction of a screen pixel even at the whole-world view -- smaller
+  // than any human can click precisely, at any reasonable zoom level (the
+  // *area* ratio between France and Vatican City is on the order of
+  // 100,000:1). Rather than chase that with zoom range alone, every feature
+  // whose on-screen bounding box is below HIT_ASSIST_MAX_PX gets an
+  // invisible, generously-sized circle centered on it that forwards clicks
+  // the same way its real path would -- recomputed on every redraw so it
+  // tracks rotation/zoom, and it naturally stops applying once a country is
+  // zoomed in past the threshold and can be clicked directly.
+  const HIT_ASSIST_MAX_PX = 16;
+  const HIT_ASSIST_RADIUS = 7;
+  let mapHandlers = null;
+
+  function updateHitAssist() {
+    if (!pathGen || !mapHandlers) return;
+    const tier = featuresByTier[activeTier] || featuresByTier['110m'];
+    if (!tier) return;
+    const tiny = [];
+    for (let i = 0; i < tier.length; i++) {
+      const feat = tier[i];
+      if (!feat) continue;
+      const b = pathGen.bounds(feat);
+      const w = b[1][0] - b[0][0], h = b[1][1] - b[0][1];
+      if (!isFinite(w) || !isFinite(h)) continue;
+      if (w < HIT_ASSIST_MAX_PX && h < HIT_ASSIST_MAX_PX) {
+        tiny.push({ i, cx: (b[0][0] + b[1][0]) / 2, cy: (b[0][1] + b[1][1]) / 2 });
+      }
+    }
+    gHitAssist.selectAll('circle.hit-assist-dot')
+      .data(tiny, (d) => d.i)
+      .join('circle')
+      .attr('class', 'hit-assist-dot')
+      .attr('data-idx', (d) => d.i)
+      .attr('cx', (d) => d.cx)
+      .attr('cy', (d) => d.cy)
+      .attr('r', HIT_ASSIST_RADIUS)
+      .on('mouseenter', function (event) { mapHandlers.onHover && mapHandlers.onHover(+this.getAttribute('data-idx'), event); })
+      .on('mousemove', function (event) { mapHandlers.onMove && mapHandlers.onMove(event); })
+      .on('mouseleave', function () { mapHandlers.onLeave && mapHandlers.onLeave(); })
+      .on('click', function () {
+        if (suppressNextClick) { suppressNextClick = false; return; }
+        mapHandlers.onClick && mapHandlers.onClick(+this.getAttribute('data-idx'));
+      });
+  }
+
   function drawBaseMap(features110, handlers) {
     setBaseFeatures(features110);
+    mapHandlers = handlers;
     const popLevels = computePopLevels(features110);
     gCountries.selectAll('path.country')
       .data(features110, (_, i) => i)
@@ -342,6 +400,7 @@
         if (suppressNextClick) { suppressNextClick = false; return; }
         handlers.onClick && handlers.onClick(+this.getAttribute('data-idx'));
       });
+    updateHitAssist();
   }
 
   // Every class any mode ever paints onto a country. A call to paintClasses()

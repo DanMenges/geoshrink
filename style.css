@@ -108,6 +108,11 @@ svg#map { display: block; width: 100%; height: 100%; }
 .sphere-outline { fill: none; stroke: var(--graticule); stroke-width: 1; }
 
 .country { stroke: var(--surface-1); stroke-width: 0.5; cursor: default; transition: fill 260ms ease, opacity 300ms ease; }
+/* Invisible larger click target standing in for countries too small to hit
+   precisely at their real rendered size (see engine/map.js's updateHitAssist) --
+   needs fill:transparent + explicit pointer-events (a transparent fill is
+   otherwise NOT hit-testable under SVG's default visiblePainted behavior). */
+.hit-assist-dot { fill: transparent; pointer-events: all; cursor: pointer; }
 .country.eliminated { fill: var(--eliminated-fill); stroke: var(--eliminated-stroke); opacity: 0.6; cursor: default; }
 .country.cont-1 { fill: var(--cont-1); }
 .country.cont-2 { fill: var(--cont-2); }
