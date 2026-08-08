@@ -5,6 +5,8 @@
   const balanceEl = document.getElementById('shop-balance-amount');
   const themesEl = document.getElementById('shop-themes');
   const shieldEl = document.getElementById('shop-shield');
+  const repairToolsEl = document.getElementById('shop-repair-tools');
+  const xpPotionsEl = document.getElementById('shop-xp-potions');
 
   function refreshWalletDisplay() {
     const coins = GN.progression.getCoins();
@@ -72,10 +74,57 @@
     });
   }
 
+  function renderRepairTools() {
+    const count = GN.progression.getRepairToolCount();
+    const price = GN.progression.REPAIR_TOOL_PRICE;
+    const canAfford = GN.progression.getCoins() >= price;
+    repairToolsEl.innerHTML =
+      '<span class="shield-count">You have: <b>' + count + '</b></span>' +
+      '<button class="hud-btn shop-btn" id="shop-buy-repair"' + (canAfford ? '' : ' disabled') + '>Buy — ' + price + '</button>';
+    document.getElementById('shop-buy-repair').addEventListener('click', () => {
+      if (GN.progression.buyRepairTool()) {
+        GN.hud.showToast('Repair Tool purchased!');
+        render();
+      } else {
+        GN.hud.showToast('Not enough coins.');
+      }
+    });
+  }
+
+  function formatBoostDuration(ms) {
+    const totalMin = Math.max(1, Math.ceil(ms / 60000));
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+    return h > 0 ? h + 'h' + (m ? ' ' + m + 'm' : '') : m + 'm';
+  }
+
+  function renderXpPotions() {
+    const coins = GN.progression.getCoins();
+    const active = GN.progression.isXpBoostActive();
+    const statusHtml = active
+      ? '<p class="shop-hint shop-boost-active">⚡ 2x XP active — ' + formatBoostDuration(GN.progression.getXpBoostRemainingMs()) + ' left</p>'
+      : '<p class="shop-hint">No active boost.</p>';
+    const buttons = GN.progression.XP_POTIONS.map((p) =>
+      '<button class="hud-btn shop-btn" data-potion="' + p.id + '"' + (coins < p.price ? ' disabled' : '') + '>' + p.label + ' — ' + p.price + '</button>'
+    ).join('');
+    xpPotionsEl.innerHTML = statusHtml + '<div class="shop-potion-row">' + buttons + '</div>';
+    xpPotionsEl.querySelectorAll('[data-potion]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (GN.progression.buyXpPotion(btn.getAttribute('data-potion'))) {
+          GN.hud.showToast('XP Potion activated — 2x XP!');
+          render();
+        } else {
+          GN.hud.showToast('Not enough coins.');
+        }
+      });
+    });
+  }
+
   function render() {
     balanceEl.textContent = GN.progression.getCoins();
     renderThemes();
     renderShield();
+    renderRepairTools();
+    renderXpPotions();
     refreshWalletDisplay();
     if (GN.home) GN.home.renderLevelBadge();
   }

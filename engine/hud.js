@@ -22,6 +22,7 @@
   const hudLevelNum = document.getElementById('hud-level-num');
   const hudLevelFill = document.getElementById('hud-level-fill');
   const hudLevelXp = document.getElementById('hud-level-xp');
+  const hudXpBoostBadge = document.getElementById('hud-xp-boost-badge');
 
   // Called from GN.progression.applyOutcome() itself (same pattern as the
   // shop's wallet-refresh hook) so the in-game level chip updates the moment
@@ -40,6 +41,7 @@
     hudLevelNum.textContent = level;
     hudLevelFill.style.width = Math.round(100 * Math.max(0, Math.min(1, into / span))) + '%';
     if (hudLevelXp) hudLevelXp.textContent = into + ' / ' + span + ' XP';
+    if (hudXpBoostBadge) hudXpBoostBadge.classList.toggle('show', GN.progression.isXpBoostActive());
   }
 
   function setStats(list) {

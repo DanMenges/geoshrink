@@ -1,11 +1,25 @@
 (function () {
   const GN = window.GN = window.GN || {};
 
+  // Syncs the data-theme attribute from the player's stored background
+  // preference ('auto'/'light'/'dark' — see GN.progression.getPageTheme).
+  // style.css's :root rules already branch on this attribute (and on
+  // prefers-color-scheme when it's absent); this is the only place that
+  // ever writes it. Folded into apply() itself (not a separate call site)
+  // so every existing apply() trigger — initial load, equipping a map
+  // color theme — keeps the page background in sync for free.
+  function applyPageTheme() {
+    const pref = GN.progression && GN.progression.getPageTheme ? GN.progression.getPageTheme() : 'auto';
+    if (pref === 'light' || pref === 'dark') document.documentElement.setAttribute('data-theme', pref);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+
   // Applies the player's equipped cosmetic color theme by overriding the
   // --group-a/--group-b custom properties at the document root — every
   // existing CSS rule already reads these via var(...), so no rule needs to
   // know themes exist. Re-applied on load and whenever the theme changes.
   function apply() {
+    applyPageTheme();
     const theme = GN.progression.getEquippedTheme();
     // --group-a/--group-b are declared on .viz-root (not :root) — an
     // element-level rule always wins over an inherited value regardless of

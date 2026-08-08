@@ -1,8 +1,8 @@
 (function () {
   const GN = window.GN = window.GN || {};
   const START_SUPPLIES = 4;
-  const BASE_COINS = 100;
-  const COMBO_STEP = 15; // extra coins per consecutive correct answer beyond the first
+  const BASE_COINS = 50;
+  const COMBO_STEP = 8; // extra coins per consecutive correct answer beyond the first
   const COMBO_CAP = 10; // combo bonus stops growing past this many in a row (still keeps the x-streak flavor, just bounded)
 
   // Difficulty (shared with the rest of the app via the Home-screen tier

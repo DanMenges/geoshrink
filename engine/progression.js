@@ -200,13 +200,22 @@
   }
 
   // --- repair tool (consumable — undoes a mistake mid-round) -----------------
-  // Granted for free every REPAIR_TOOL_LEVEL_INTERVAL levels (see addXp), not
-  // purchasable with coins. Decrements the live per-round `mistakes` counter
-  // directly, so a repaired mistake is indistinguishable from one that never
-  // happened to every consumer that reads getMistakes() — the HUD stat, the
-  // win-screen text, and the flawless check recordFlawlessCompletion gates on.
+  // Granted for free every REPAIR_TOOL_LEVEL_INTERVAL levels (see addXp), and
+  // also buyable individually in the shop's Utilities section. Decrements the
+  // live per-round `mistakes` counter directly, so a repaired mistake is
+  // indistinguishable from one that never happened to every consumer that
+  // reads getMistakes() — the HUD stat, the win-screen text, and the
+  // flawless check recordFlawlessCompletion gates on.
 
+  const REPAIR_TOOL_PRICE = 60;
   function getRepairToolCount() { return loadProgress().repairTools || 0; }
+  function buyRepairTool() {
+    if (!spendCoins(REPAIR_TOOL_PRICE)) return false;
+    const progress = loadProgress();
+    progress.repairTools = (progress.repairTools || 0) + 1;
+    saveProgress(progress);
+    return true;
+  }
   function useRepairTool() {
     if (getRepairToolCount() <= 0 || mistakes <= 0) return false;
     const progress = loadProgress();
@@ -282,6 +291,24 @@
     const progress = loadProgress();
     progress.showFlags = !!on;
     saveProgress(progress);
+  }
+
+  // Page background: 'auto' follows the OS's prefers-color-scheme (the
+  // long-standing default), 'light'/'dark' force one regardless — for
+  // players who don't want the app pulled into dark mode just because their
+  // OS is. See engine/theme.js's applyPageTheme(), which actually sets the
+  // data-theme attribute this reads back from CSS.
+  const PAGE_THEMES = ['auto', 'light', 'dark'];
+  function getPageTheme() {
+    const t = loadProgress().pageTheme;
+    return PAGE_THEMES.includes(t) ? t : 'auto';
+  }
+  function setPageTheme(id) {
+    if (!PAGE_THEMES.includes(id)) return false;
+    const progress = loadProgress();
+    progress.pageTheme = id;
+    saveProgress(progress);
+    return true;
   }
 
   // --- sampling: difficulty-weighted pool + target selection ---------------
@@ -409,11 +436,11 @@
   // worth rewarding here. Called once per win from GN.hud.showWin, not
   // per-mode, so every mode's win screen gets it for free.
   function winBonusForMistakes(m) {
-    if (m === 0) return 20;
-    if (m === 1) return 10;
-    if (m === 2) return 5;
-    if (m <= 4) return 3;
-    if (m <= 8) return 2;
+    if (m === 0) return 10;
+    if (m === 1) return 5;
+    if (m === 2) return 3;
+    if (m <= 4) return 2;
+    if (m <= 8) return 1;
     return 1;
   }
   function applyWinBonus() {
@@ -423,11 +450,43 @@
     return { bonus, coins };
   }
 
+  // --- XP Potions (consumable — time-limited 2x XP) --------------------------
+  // A single stored expiry timestamp, not a duration counter — buying a
+  // potion while one is already active EXTENDS it (from whichever is later:
+  // now, or the current expiry) rather than replacing or stacking multipliers,
+  // so a purchase never wastes time already paid for and boosts never compound
+  // into something silly like 4x.
+  const XP_POTIONS = [
+    { id: '10m', label: '10 Minutes', durationMs: 10 * 60 * 1000, price: 40 },
+    { id: '30m', label: '30 Minutes', durationMs: 30 * 60 * 1000, price: 100 },
+    { id: '1h', label: '1 Hour', durationMs: 60 * 60 * 1000, price: 170 },
+  ];
+  function isXpBoostActive() { return (loadProgress().xpBoostUntil || 0) > Date.now(); }
+  function getXpBoostRemainingMs() { return Math.max(0, (loadProgress().xpBoostUntil || 0) - Date.now()); }
+  function buyXpPotion(id) {
+    const potion = XP_POTIONS.find((p) => p.id === id);
+    if (!potion) return false;
+    if (!spendCoins(potion.price)) return false;
+    const progress = loadProgress();
+    const base = Math.max(Date.now(), progress.xpBoostUntil || 0);
+    progress.xpBoostUntil = base + potion.durationMs;
+    saveProgress(progress);
+    return true;
+  }
+
   // Shared by applyOutcome's per-answer XP and applyRoundXp's per-round XP
   // below — one place for "grant this much XP, refresh the HUD chip, and
-  // toast a level-up with its rewards" so both paths stay in sync.
+  // toast a level-up with its rewards" so both paths stay in sync. Also the
+  // single choke point both paths already run through, so the XP Potion
+  // doubling only needs to live here once, not per-mode.
   function grantXp(amount) {
-    const xpResult = addXp(amount);
+    // Doubled here, not by callers — they report whatever xpGain THIS
+    // function hands back (see the Object.assign merges in applyOutcome and
+    // applyRoundXp below, where this return value is always the LAST source
+    // so its xpGain wins), so a boosted grant is never under-reported in a
+    // win-screen or toast.
+    const granted = isXpBoostActive() ? amount * 2 : amount;
+    const xpResult = addXp(granted);
     if (GN.hud && GN.hud.refreshLevelChip) GN.hud.refreshLevelChip();
     if (xpResult.leveledUp && GN.hud) {
       let msg = 'Level up! You’re now Level ' + xpResult.level + '.';
@@ -437,7 +496,7 @@
       if (rewardParts.length) msg += ' ' + rewardParts.join(' and ') + '!';
       GN.hud.showToast(msg);
     }
-    return xpResult;
+    return Object.assign({ xpGain: granted }, xpResult);
   }
 
   // --- round-end XP (Geo Shrink) --------------------------------------------
@@ -450,7 +509,7 @@
   const ROUND_XP_RATE = 0.05;
   function applyRoundXp(points) {
     const xpGain = Math.round(points * ROUND_XP_RATE * getSelectedDifficulty().xpMult);
-    return Object.assign({ xpGain }, grantXp(xpGain));
+    return grantXp(xpGain);
   }
 
   // outcome: {type: 'correct'|'wrong'|'partial', points, partialRatio, coins, xp}
@@ -508,9 +567,9 @@
     if (outcome.coins != null) {
       coinsGain = outcome.coins;
     } else if (outcome.type === 'correct') {
-      coinsGain = 10;
+      coinsGain = 5;
     } else if (outcome.type === 'partial') {
-      coinsGain = Math.round(5 * (outcome.partialRatio != null ? outcome.partialRatio : 0.5));
+      coinsGain = Math.round(3 * (outcome.partialRatio != null ? outcome.partialRatio : 0.5));
     }
     coinsGain = Math.round(coinsGain * tier.xpMult);
     const coinsTotal = addCoins(coinsGain);
@@ -528,9 +587,10 @@
     xpForLevel, buildPool, pickTarget, getExpeditionRecent, recordExpeditionEndpoints,
     getCoins, addCoins, spendCoins,
     getShieldCount, buyShield, consumeShield,
-    getRepairToolCount, useRepairTool,
+    getRepairToolCount, useRepairTool, REPAIR_TOOL_PRICE, buyRepairTool,
+    XP_POTIONS, isXpBoostActive, getXpBoostRemainingMs, buyXpPotion,
     getThemeCatalog, isThemeOwned, getEquippedThemeId, getEquippedTheme, buyTheme, equipTheme,
     getPassportTier, getPassportTierByIso3, recordFlawlessCompletion, getPassportCollectedCount,
-    getShowFlags, setShowFlags,
+    getShowFlags, setShowFlags, getPageTheme, setPageTheme,
   };
 })();

@@ -114,6 +114,16 @@
     });
   }
 
+  // Static buttons already in index.html (not regenerated per-render like
+  // renderDifficultyPicker's chips), so this just toggles .active — click
+  // listeners are wired once below, at module load.
+  function renderBgPicker() {
+    const selected = GN.progression.getPageTheme();
+    document.querySelectorAll('#bg-picker .bg-chip').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-page-theme') === selected);
+    });
+  }
+
   function renderModeGrid() {
     const showFlags = GN.progression.getShowFlags();
     const cards = MODE_CARDS.filter((m) => m.id !== 'flags' || showFlags);
@@ -153,6 +163,7 @@
     renderDifficultyPicker();
     renderDailyCallout();
     renderModeGrid();
+    renderBgPicker();
     if (GN.collections) GN.collections.refreshCallout();
     homeScreen.classList.add('show');
     boardEl.classList.add('hidden');
@@ -194,6 +205,16 @@
     renderDifficultyPicker();
     renderDailyCallout();
     renderModeGrid();
+    renderBgPicker();
+    GN.theme.apply();
+  });
+
+  document.querySelectorAll('#bg-picker .bg-chip').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      GN.progression.setPageTheme(btn.getAttribute('data-page-theme'));
+      GN.theme.apply();
+      renderBgPicker();
+    });
   });
 
   const showFlagsToggle = document.getElementById('show-flags-toggle');

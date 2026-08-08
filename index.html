@@ -30,7 +30,7 @@
           </div>
           <div class="stats" id="stats-container"></div>
           <div class="hud-level-chip" id="hud-level-chip" title="Level progress">
-            <div class="hud-level-top"><span id="hud-level-num">1</span><span class="hud-level-word">LVL</span></div>
+            <div class="hud-level-top"><span id="hud-level-num">1</span><span class="hud-level-word">LVL</span><span class="hud-xp-boost-badge" id="hud-xp-boost-badge" title="XP Potion active">⚡2x</span></div>
             <div class="hud-level-track"><div class="hud-level-fill" id="hud-level-fill"></div></div>
             <div class="hud-level-xp" id="hud-level-xp">–</div>
           </div>
@@ -185,6 +185,12 @@
             </span>
             Show flags
           </label>
+          <div class="bg-picker" id="bg-picker" title="Background — Light forces light mode even if your OS is set to dark">
+            <span class="bg-picker-label">Background</span>
+            <button class="bg-chip" data-page-theme="auto">Auto</button>
+            <button class="bg-chip" data-page-theme="light">Light</button>
+            <button class="bg-chip" data-page-theme="dark">Dark</button>
+          </div>
           <span class="home-footer-note">Flags by flag-icons (MIT). Boundaries by Natural Earth. Dinosaur silhouettes via PhyloPic (CC0).</span>
         </div>
       </div>
@@ -237,6 +243,13 @@
           <h3>Streak Shield</h3>
           <p class="shop-hint">Protects your current streak the next time you get one wrong — used automatically.</p>
           <div class="shop-shield" id="shop-shield"></div>
+        </div>
+        <div class="shop-section">
+          <h3>Utilities</h3>
+          <p class="shop-hint">Repair Tools</p>
+          <div class="shop-shield" id="shop-repair-tools"></div>
+          <p class="shop-hint">XP Potions — double XP for a limited time</p>
+          <div class="shop-xp-potions" id="shop-xp-potions"></div>
         </div>
       </div>
     </div>
