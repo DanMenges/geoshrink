@@ -37,11 +37,22 @@
     return String(n);
   }
 
+  // Natural Earth's admin-0 roster (which data/country-meta.json is keyed
+  // off) includes a handful of non-sovereign dependencies alongside actual
+  // countries -- fine for a map you can click, wrong for a clue that says
+  // "country" (e.g. "the world's least populous country" was resolving to
+  // French Southern & Antarctic Lands, an uninhabited French territory with
+  // a placeholder population figure, not a real nation). Excluded from the
+  // whole Path pool, not just population templates, so no future template
+  // can hand one of these back as a "country" answer either.
+  const NON_SOVEREIGN_ISO3 = ['ATF', 'FLK', 'GRL', 'NCL'];
+
   let cachedNodes = null;
 
   function buildNodes() {
     const data = GN.data;
-    const pool = data.metaIndices.slice(); // every candidate has full metadata + a name
+    const pool = data.metaIndices // every candidate has full metadata + a name
+      .filter((i) => !NON_SOVEREIGN_ISO3.includes(data.iso3ByIdx[i]));
     const meta = (idx) => data.metaByIdx(idx);
     const rng = makeRng(hashSeed(SEED_STRING));
 
