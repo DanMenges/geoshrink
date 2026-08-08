@@ -20,10 +20,20 @@
     return ctx.data.names[idx];
   }
 
+  function wireWaterToggle(ctx) {
+    ctx.hud.setPanel('<button class="hud-btn" id="atlas-water-toggle">Hide rivers & lakes</button>');
+    document.getElementById('atlas-water-toggle').addEventListener('click', () => {
+      ctx.state.showWater = !ctx.state.showWater;
+      GN.map.setWaterVisible(ctx.state.showWater);
+      document.getElementById('atlas-water-toggle').textContent = ctx.state.showWater ? 'Hide rivers & lakes' : 'Show rivers & lakes';
+    });
+  }
+
   const mode = {
     title: 'World Atlas',
     setup(ctx) {
-      ctx.state = {};
+      ctx.state = { showWater: true };
+      GN.map.setWaterVisible(true);
       const all = ctx.data.playableIndices;
       ctx.map.setActiveFeatureIndices(all);
 
@@ -49,13 +59,14 @@
 
       ctx.hud.setProgress(1);
       ctx.hud.setStats([]);
-      ctx.hud.setPanel('');
+      wireWaterToggle(ctx);
     },
     teardown(ctx) {
       ctx.map.setLabels([], null);
       ctx.hud.hideTooltip();
       ctx.hud.setPanel('');
       ctx.hud.setLegend('');
+      GN.map.setWaterVisible(false);
     },
     onHover(ctx, idx, event) { ctx.hud.showTooltip(event, tooltipText(idx, ctx)); },
     onMove(ctx, event) { ctx.hud.moveTooltip(event); },

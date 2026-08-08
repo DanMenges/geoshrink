@@ -1,4 +1,4 @@
-const CACHE = 'geoshrink-v55';
+const CACHE = 'geoshrink-v56';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,8 @@ const ASSETS = [
   './manifest.json',
   './data/countries-110m.json',
   './data/countries-extra.json',
+  './data/rivers.json',
+  './data/lakes.json',
   './data/name-to-iso3.json',
   './data/country-meta.json',
   './engine/map.js',

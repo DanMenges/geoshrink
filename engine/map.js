@@ -27,6 +27,11 @@
   // transform gCountries gets during animateToProjection's transition,
   // instead of visually lagging behind for the ~700ms it runs.
   const gHitAssist = gCountries.append('g').attr('class', 'hit-assist');
+  // Rivers/lakes overlay -- display-only for now (see setWaterFeatures/
+  // setWaterVisible below), the rendering half of a future "Water Wisdom"
+  // mode. Hidden by default; Atlas mode turns it on for its own free-roam
+  // view and off again on teardown.
+  const gWater = svg.append('g').attr('class', 'water-layer hidden');
   const gDino = svg.append('g').attr('class', 'dino-illustrations');
   const gLabels = svg.append('g').attr('class', 'country-labels');
   const graticuleData = d3.geoGraticule10();
@@ -283,6 +288,20 @@
     return proj;
   }
 
+  // --- water overlay (rivers/lakes) -- display-only for now, see gWater ---
+  let waterRivers = [], waterLakes = [];
+  function redrawWater() {
+    if (!pathGen) return;
+    gWater.selectAll('path.river').data(waterRivers).join('path').attr('class', 'river').attr('d', pathGen);
+    gWater.selectAll('path.lake').data(waterLakes).join('path').attr('class', 'lake').attr('d', pathGen);
+  }
+  function setWaterFeatures(rivers, lakes) {
+    waterRivers = rivers || [];
+    waterLakes = lakes || [];
+    redrawWater();
+  }
+  function setWaterVisible(on) { gWater.classed('hidden', !on); }
+
   function redrawWithCurrentProjection() {
     pathGen = d3.geoPath(projection);
     updateActiveTier();
@@ -292,6 +311,7 @@
     updateDinoPositions();
     renderLabels();
     updateHitAssist();
+    redrawWater();
   }
 
   function setProjectionImmediate(newProjection) {
@@ -306,7 +326,7 @@
     const tx = tx1 - s * tx0, ty = ty1 - s * ty0;
     const matrix = `matrix(${s},0,0,${s},${tx},${ty})`;
 
-    let pending = 2;
+    let pending = 3;
     const done = () => { if (--pending === 0) { setProjectionImmediate(newProjection); onDone && onDone(); } };
 
     gCountries.transition().duration(700).ease(d3.easeCubicInOut)
@@ -315,6 +335,9 @@
     gFrame.transition().duration(700).ease(d3.easeCubicInOut)
       .attr('transform', matrix)
       .on('end', () => { gFrame.attr('transform', null); done(); });
+    gWater.transition().duration(700).ease(d3.easeCubicInOut)
+      .attr('transform', matrix)
+      .on('end', () => { gWater.attr('transform', null); done(); });
   }
 
   // Log-scaled, 0-1 normalized population per country (index-aligned with
@@ -629,7 +652,7 @@
     drawBaseMap, paintClasses, clearFlashClasses, flashCountries,
     setActiveFeatureIndices, setFiftyMFeatures, onNeedHighRes, setBaseFeatures,
     setRotation, getRotation, getZoom, resetRotation,
-    setLabels,
+    setLabels, setWaterFeatures, setWaterVisible,
     get projection() { return projection; },
     get pathGen() { return pathGen; },
     get activeTier() { return activeTier; },

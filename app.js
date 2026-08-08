@@ -131,6 +131,17 @@
         },
       });
 
+      // Rivers/lakes overlay -- fetched separately and lazily since it's not
+      // needed for any critical-path rendering yet (display-only spike, see
+      // engine/map.js's setWaterFeatures; modes/atlas.js is the only mode
+      // that turns it on right now).
+      Promise.all([
+        fetch('data/rivers.json').then(r => r.json()).catch(() => ({ features: [] })),
+        fetch('data/lakes.json').then(r => r.json()).catch(() => ({ features: [] })),
+      ]).then(([riversFC, lakesFC]) => {
+        GN.map.setWaterFeatures(riversFC.features || [], lakesFC.features || []);
+      });
+
       // A #hash still jumps straight into a mode (handy for direct links/testing);
       // Home is already showing otherwise (see top of this file).
       if (directModeAtLoad) {
