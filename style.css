@@ -379,18 +379,19 @@ svg#map { display: block; width: 100%; height: 100%; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 5px 11px;
-  border-radius: 8px;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: 9px;
   background: var(--surface-1);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  min-width: 56px;
+  min-width: 72px;
 }
 .hud-level-top { display: flex; align-items: baseline; gap: 3px; }
-.hud-level-top span:first-child { font-size: 14px; font-weight: 700; color: var(--guessable); font-variant-numeric: tabular-nums; }
-.hud-level-word { font-size: 8.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.hud-level-track { height: 4px; border-radius: 999px; background: var(--eliminated-fill); overflow: hidden; width: 100%; }
+.hud-level-top span:first-child { font-size: 16px; font-weight: 700; color: var(--guessable); font-variant-numeric: tabular-nums; }
+.hud-level-word { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.hud-level-track { height: 5px; border-radius: 999px; background: var(--eliminated-fill); overflow: hidden; width: 100%; }
+.hud-level-xp { font-size: 9.5px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hud-level-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--group-a), var(--guessable)); width: 0%; transition: width 500ms ease; }
 
 .hud-mission {
@@ -1236,8 +1237,9 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .stat-chip { min-width: 40px; padding: 4px 7px; }
   .stat-chip .v { font-size: 12.5px; }
   .stat-chip .l { font-size: 8.5px; }
-  .hud-level-chip { min-width: 40px; padding: 4px 7px; }
+  .hud-level-chip { min-width: 46px; padding: 5px 8px; }
   .hud-level-top span:first-child { font-size: 12.5px; }
+  .hud-level-xp { font-size: 7.5px; }
   .wallet-chip { padding: 6px 9px; font-size: 12px; }
   .hud-mission { padding: 8px 14px; }
   .find { font-size: 13px; }
