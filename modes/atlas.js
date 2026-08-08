@@ -34,6 +34,7 @@
     setup(ctx) {
       ctx.state = { showWater: true };
       GN.map.setWaterVisible(true);
+      GN.map.setWaterTypeFilter(null); // rivers + lakes both shown, in case Water Wisdom left a type filter set
       const all = ctx.data.playableIndices;
       ctx.map.setActiveFeatureIndices(all);
 

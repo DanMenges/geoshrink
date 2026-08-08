@@ -292,10 +292,21 @@
   let waterRivers = [], waterLakes = [];
   let waterInteractive = false;
   let waterHandlers = null;
+  // Class is set only on ENTER (like gCountries' own paths) so a redraw
+  // (drag/zoom/pan, which reruns this on every frame) only ever touches the
+  // `d` attribute -- otherwise paintWaterClasses' water-a/water-b groups
+  // would get wiped the instant the player so much as rotated the globe.
   function redrawWater() {
     if (!pathGen) return;
-    gWater.selectAll('path.river').data(waterRivers).join('path').attr('class', 'river').attr('d', pathGen);
-    gWater.selectAll('path.lake').data(waterLakes).join('path').attr('class', 'lake').attr('d', pathGen)
+    gWater.selectAll('path.river')
+      .data(waterRivers)
+      .join((enter) => enter.append('path').attr('class', 'river'))
+      .attr('d', pathGen);
+
+    gWater.selectAll('path.lake')
+      .data(waterLakes)
+      .join((enter) => enter.append('path').attr('class', 'lake'))
+      .attr('d', pathGen)
       .style('pointer-events', waterInteractive ? 'all' : 'none')
       .style('cursor', waterInteractive ? 'pointer' : 'default')
       .on('click', waterInteractive ? function (event, d) {
@@ -314,8 +325,7 @@
     // the thin visible .river path stays purely cosmetic.
     gWater.selectAll('path.river-hit')
       .data(waterInteractive ? waterRivers : [])
-      .join('path')
-      .attr('class', 'river-hit')
+      .join((enter) => enter.append('path').attr('class', 'river-hit'))
       .attr('d', pathGen)
       .on('click', function (event, d) {
         waterHandlers && waterHandlers.onWaterClick && waterHandlers.onWaterClick('river', waterRivers.indexOf(d));
@@ -326,6 +336,28 @@
       .on('mouseleave', function () {
         waterHandlers && waterHandlers.onWaterLeave && waterHandlers.onWaterLeave();
       });
+  }
+
+  // Mirrors paintClasses() for the water layer: a fixed set of managed
+  // classes, always fully cleared/reset per call so state never leaks
+  // between rounds. `type` scopes the call to just rivers or just lakes
+  // (Water Wisdom only ever narrows one at a time) -- the other layer is
+  // left as-is, which is why modes/water.js also calls setWaterTypeFilter
+  // to hide it entirely rather than leaving it in a stale colored state.
+  const WATER_PAINT_CLASSES = ['water-a', 'water-b'];
+  function paintWaterClasses(type, classMap) {
+    const sel = type === 'river' ? gWater.selectAll('path.river') : gWater.selectAll('path.lake');
+    WATER_PAINT_CLASSES.forEach((cls) => {
+      const fn = Object.prototype.hasOwnProperty.call(classMap, cls) ? classMap[cls] : () => false;
+      sel.classed(cls, (d, i) => fn(i));
+    });
+  }
+  // Water Wisdom is one-type-per-round -- the inactive type (and rivers'
+  // click-catching hit-strokes) is fully hidden rather than just dimmed, so
+  // it's unambiguous which layer is actually in play.
+  function setWaterTypeFilter(type) {
+    gWater.classed('rivers-only', type === 'river');
+    gWater.classed('lakes-only', type === 'lake');
   }
   function setWaterInteractive(on, handlers) {
     waterInteractive = on;
@@ -690,6 +722,7 @@
     setActiveFeatureIndices, setFiftyMFeatures, onNeedHighRes, setBaseFeatures,
     setRotation, getRotation, getZoom, resetRotation,
     setLabels, setWaterFeatures, setWaterVisible, setWaterInteractive,
+    paintWaterClasses, setWaterTypeFilter,
     getWaterRivers: () => waterRivers, getWaterLakes: () => waterLakes,
     get projection() { return projection; },
     get pathGen() { return pathGen; },

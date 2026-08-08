@@ -132,6 +132,19 @@ svg#map { display: block; width: 100%; height: 100%; }
    only added to the DOM while a mode has set water interactive. */
 .river-hit { fill: none; stroke: transparent; stroke-width: 10; pointer-events: stroke; cursor: pointer; }
 
+/* Water Wisdom is one-type-per-round -- the inactive layer is fully
+   hidden, not just dimmed, so it's unambiguous what's actually in play. */
+.water-layer.rivers-only .lake { display: none; }
+.water-layer.lakes-only .river, .water-layer.lakes-only .river-hit { display: none; }
+
+/* Geo Shrink-style binary narrowing, applied to the water layer instead of
+   countries -- bright vs. dark blue rather than the theme's --group-a/-b
+   (which are tuned for filled country regions, not thin lines). */
+.river.water-a { stroke: #4dabf7; stroke-width: 2.2; opacity: 1; }
+.river.water-b { stroke: #0b3d6b; stroke-width: 2.2; opacity: 1; }
+.lake.water-a { fill: #4dabf7; stroke: #2f86c9; opacity: 1; }
+.lake.water-b { fill: #0b3d6b; stroke: #062544; opacity: 1; }
+
 .country-label {
   pointer-events: none;
   font-size: 9px;

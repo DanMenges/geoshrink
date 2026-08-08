@@ -85,6 +85,7 @@
     if (!data.progress.passports) data.progress.passports = {};
     if (data.progress.repairTools == null) data.progress.repairTools = 0;
     if (!data.progress.expeditionRecent) data.progress.expeditionRecent = [];
+    if (!data.progress.waterRecent) data.progress.waterRecent = [];
     if (!data.progress.ownedBackgroundThemes) data.progress.ownedBackgroundThemes = [];
     if (data.progress.pathFurthest == null) data.progress.pathFurthest = 0;
     // Free themes are granted unconditionally, including retroactively to
@@ -467,6 +468,22 @@
     saveProgress(progress);
   }
 
+  // Water Wisdom's targets aren't country indices (rivers/lakes have their
+  // own separate local arrays, see engine/map.js), so — same reasoning as
+  // Expedition above — it keeps its own recency list rather than sharing
+  // recentTargets. Keyed by 'river:<i>'/'lake:<i>' so the two types can
+  // never collide on the same numeric index.
+  const WATER_RECENT_CAP = 16;
+  function getWaterRecent() { return loadProgress().waterRecent || []; }
+  function recordWaterTarget(key) {
+    const progress = loadProgress();
+    const seen = new Set();
+    progress.waterRecent = [key, ...(progress.waterRecent || [])]
+      .filter((k) => (seen.has(k) ? false : (seen.add(k), true)))
+      .slice(0, WATER_RECENT_CAP);
+    saveProgress(progress);
+  }
+
   // --- per-round session state ----------------------------------------------
 
   let currentStreak = 0;
@@ -639,6 +656,7 @@
     getXp, getLevel, addXp, getSelectedDifficultyId, getSelectedDifficulty, setSelectedDifficulty,
     isDifficultyUnlocked,
     xpForLevel, buildPool, pickTarget, getExpeditionRecent, recordExpeditionEndpoints,
+    getWaterRecent, recordWaterTarget,
     getCoins, addCoins, spendCoins,
     getShieldCount, buyShield, consumeShield,
     getRepairToolCount, useRepairTool, REPAIR_TOOL_PRICE, buyRepairTool,
