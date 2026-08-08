@@ -196,8 +196,9 @@
         { id: 'mistakes', value: '0', label: 'Mistakes' },
       ]);
       ctx.hud.setLegend(
-        '<span class="a"><span class="swatch" style="background:#4dabf7"></span>Group A</span>' +
-        '<span class="b"><span class="swatch" style="background:#0b3d6b"></span>Group B</span>'
+        '<span class="a"><span class="swatch" style="background:#2fb344"></span>Group A</span>' +
+        '<span class="b"><span class="swatch" style="background:#e03131"></span>Group B</span>' +
+        '<span class="elim"><span class="swatch" style="background:#2f7fd6"></span>Not this round</span>'
       );
       ctx.hud.setPanel('');
       ctx.hud.setHint('The rivers and lakes split in two each round — narrow down to the target.');
