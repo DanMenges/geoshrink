@@ -1,11 +1,15 @@
 .viz-root {
   color-scheme: light;
-  /* Slightly darkened off-white/soft-blue palette rather than near-white —
-     the original #fcfcfb/#f9f9f7/#dfeaf9 read as very bright/glary for
-     players who prefer light mode but not blinding-white. Text, borders,
-     and every accent color are untouched — only the big background fields. */
-  --surface-1:      #f3f3f0;
-  --page-plane:     #eeeeea;
+  /* Darkened off-white/soft-blue palette rather than near-white — the
+     original #fcfcfb/#f9f9f7/#dfeaf9 read as very bright/glary for players
+     who prefer light mode but not blinding-white. A first pass at
+     #f3f3f0/#eeeeea/#d2e0f2 was too subtle to actually read as different —
+     this one is a clearly perceptible step down (~90% lightness vs the
+     original ~99%), while staying unambiguously "light mode", not gray.
+     Text, borders, and every accent color are untouched — only the big
+     background fields. */
+  --surface-1:      #e7e7e2;
+  --page-plane:     #dedad3;
   --text-primary:   #0b0b0b;
   --text-secondary: #52514e;
   --text-muted:     #898781;
@@ -15,8 +19,8 @@
   --guessable:      #4a3aa7;   /* series slot 7: violet */
   --eliminated-fill:#e1e0d9;
   --eliminated-stroke: #c3c2b7;
-  --ocean:          #d2e0f2;
-  --graticule:      #c7d6ea;
+  --ocean:          #c3d5ec;
+  --graticule:      #b3c6e0;
   --good:           #0ca30c;
   --critical:       #d03b3b;
   --shadow: 0 1px 2px rgba(11,11,11,0.06), 0 8px 24px rgba(11,11,11,0.10);
