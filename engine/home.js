@@ -184,6 +184,7 @@
     renderModeGrid();
     renderBgPicker();
     if (GN.collections) GN.collections.refreshCallout();
+    if (GN.path) GN.path.refreshCallout();
     homeScreen.classList.add('show');
     boardEl.classList.add('hidden');
     GN.heroGlobe.start();

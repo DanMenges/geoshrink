@@ -75,7 +75,7 @@
       // Starting balance is generous on purpose — it lets a new player open
       // the shop and actually try a purchase right away instead of grinding
       // toward it blind.
-      data.progress = { xp: 0, tier: 'easy', coins: 1000, shields: 0, ownedThemes: FREE_THEME_IDS.slice(), theme: 'classic', recentTargets: [], showFlags: true, passports: {}, repairTools: 0, expeditionRecent: [] };
+      data.progress = { xp: 10000, tier: 'easy', coins: 100000, shields: 0, ownedThemes: FREE_THEME_IDS.slice(), theme: 'classic', recentTargets: [], showFlags: true, passports: {}, repairTools: 0, expeditionRecent: [] };
     }
     if (data.progress.coins == null) data.progress.coins = 1000;
     if (data.progress.shields == null) data.progress.shields = 0;
@@ -86,6 +86,7 @@
     if (data.progress.repairTools == null) data.progress.repairTools = 0;
     if (!data.progress.expeditionRecent) data.progress.expeditionRecent = [];
     if (!data.progress.ownedBackgroundThemes) data.progress.ownedBackgroundThemes = [];
+    if (data.progress.pathFurthest == null) data.progress.pathFurthest = 0;
     // Free themes are granted unconditionally, including retroactively to
     // existing saves — nothing with price 0 should ever need "buying".
     FREE_THEME_IDS.forEach((id) => {
@@ -292,6 +293,18 @@
     const progress = loadProgress();
     progress.showFlags = !!on;
     saveProgress(progress);
+  }
+
+  // Learning Path progress: index of the furthest node ever completed (0 =
+  // none yet). Only ever moves forward — replaying an earlier node (once
+  // that's possible) shouldn't be able to regress it.
+  function getPathFurthest() { return loadProgress().pathFurthest || 0; }
+  function setPathFurthest(n) {
+    const progress = loadProgress();
+    if (n > (progress.pathFurthest || 0)) {
+      progress.pathFurthest = n;
+      saveProgress(progress);
+    }
   }
 
   // Background themes. 'auto'/'light'/'dark' are free luminance modes (for
@@ -633,6 +646,7 @@
     getThemeCatalog, isThemeOwned, getEquippedThemeId, getEquippedTheme, buyTheme, equipTheme,
     getPassportTier, getPassportTierByIso3, recordFlawlessCompletion, getPassportCollectedCount,
     getShowFlags, setShowFlags, getPageTheme, setPageTheme,
+    getPathFurthest, setPathFurthest,
     getBackgroundThemeCatalog, isBackgroundThemeOwned, buyBackgroundTheme,
   };
 })();

@@ -1291,6 +1291,95 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
 }
 .coll-card.tier-3 .coll-tier-icon, .coll-card.tier-3 .coll-tier-label { color: #c9902a; font-weight: 800; }
 
+/* Learning Path ------------------------------------------------------------ */
+.path-callout { background: linear-gradient(90deg, color-mix(in srgb, #7c5cff 14%, var(--surface-1)), var(--surface-1)); color: #7c5cff; }
+
+.path-inner { max-width: 480px; margin: 0 auto; padding: 20px 20px 48px; }
+
+.path-mascot-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 4px auto 24px; }
+.path-progress-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+
+/* Mirrors .mini-globe-frame's exact circular-frame treatment, just bigger —
+   see engine/mascot.js for why the globe rendering is a separate module
+   from engine/heroGlobe.js rather than a shared one. */
+.mascot-widget {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #1c3a5e 0%, #060f1c 85%);
+  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.3);
+  animation: mascotBob 3.2s ease-in-out infinite;
+}
+.mascot-widget svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.mascot-sphere-outline { fill: #16283f; stroke: rgba(255, 255, 255, 0.18); stroke-width: 1; }
+.mascot-graticule { fill: none; stroke: rgba(255, 255, 255, 0.13); stroke-width: 0.5; }
+.mascot-land { fill: #4f8fc7; stroke: rgba(255, 255, 255, 0.16); stroke-width: 0.4; }
+.mascot-face { pointer-events: none; }
+.mascot-eye { fill: #10161f; transform-box: fill-box; transform-origin: center; transition: transform 90ms ease; }
+.mascot-eye.mascot-blink { transform: scaleY(0.12); }
+/* Filled rather than stroked — an unclosed curve (neutral/happy/concerned)
+   implicitly closes for fill purposes, rendering as a clean crescent smile/
+   frown; the closed shapes (cheering/surprised) fill as a full open mouth. */
+.mascot-mouth { fill: #10161f; stroke: none; }
+
+@keyframes mascotBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes mascotBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.12, 0.88); }
+  55% { transform: scale(0.94, 1.08); }
+  80% { transform: scale(1.03, 0.98); }
+  100% { transform: scale(1); }
+}
+.mascot-widget.mascot-bounce { animation: mascotBounce 500ms ease; }
+
+.path-column { position: relative; padding: 8px 0 20px; }
+.path-column::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 3px dashed var(--border);
+  transform: translateX(-50%);
+  z-index: 0;
+}
+.path-node-row { position: relative; z-index: 1; display: flex; padding: 9px 0; }
+.path-node-row.side-left { justify-content: flex-start; padding-left: 6%; }
+.path-node-row.side-right { justify-content: flex-end; padding-right: 6%; }
+
+.path-node {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  border: 3px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: var(--shadow);
+  transition: transform 140ms ease;
+}
+.path-node:not(.locked) { cursor: pointer; }
+.path-node:not(.locked):hover { transform: translateY(-2px) scale(1.05); }
+.path-node.locked { opacity: 0.55; }
+.path-node.done { background: var(--good); border-color: var(--good); color: #ffffff; }
+.path-node.current {
+  background: #7c5cff;
+  border-color: #7c5cff;
+  color: #ffffff;
+  animation: pathPulse 1.8s ease-in-out infinite;
+}
+@keyframes pathPulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, #7c5cff 55%, transparent), var(--shadow); }
+  50% { box-shadow: 0 0 0 9px color-mix(in srgb, #7c5cff 0%, transparent), var(--shadow); }
+}
+
 /* responsive ------------------------------------------------------------- */
 @media (max-width: 1000px) {
   .mode-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1324,6 +1413,9 @@ button.hud-btn#fullscreen-btn.active { color: var(--group-a); border-color: var(
   .grw-repair-btn { padding: 6px 8px; font-size: 11px; }
   .collections-inner { padding: 16px 14px 32px; }
   .collections-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 9px; }
+  .path-inner { padding: 14px 14px 40px; }
+  .mascot-widget { width: 108px; height: 108px; }
+  .path-node { width: 46px; height: 46px; font-size: 14px; }
 
   /* icon-only HUD buttons keep a touch-friendly hit area even as content shrinks */
   button.hud-btn.icon-only { padding: 10px; }

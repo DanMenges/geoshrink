@@ -60,6 +60,7 @@
         const landFeature = topojson.feature(topology, topology.objects.land);
         GN.heroGlobe.setLand(landFeature);
         if (GN.repairGlobe) GN.repairGlobe.setLand(landFeature);
+        if (GN.mascot) GN.mascot.setLand(landFeature);
       }
 
       GN.map.onNeedHighRes(() => {

@@ -1,4 +1,4 @@
-const CACHE = 'geoshrink-v52';
+const CACHE = 'geoshrink-v53';
 const ASSETS = [
   './',
   './index.html',
@@ -18,11 +18,14 @@ const ASSETS = [
   './engine/modeShell.js',
   './engine/heroGlobe.js',
   './engine/repairGlobe.js',
+  './engine/mascot.js',
   './engine/shop.js',
   './engine/account.js',
   './engine/multiplayer.js',
   './engine/home.js',
   './engine/collections.js',
+  './engine/pathContent.js',
+  './engine/path.js',
   './modes/narrow.js',
   './modes/neighbor.js',
   './modes/fog.js',
@@ -33,6 +36,7 @@ const ASSETS = [
   './modes/expedition.js',
   './modes/daily.js',
   './modes/atlas.js',
+  './modes/path.js',
   './modes/multiplayer.js',
   './dino/trex.svg',
   './dino/spinosaurus.svg',
