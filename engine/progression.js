@@ -423,7 +423,37 @@
     return { bonus, coins };
   }
 
-  // outcome: {type: 'correct'|'wrong'|'partial', points, partialRatio, coins}
+  // Shared by applyOutcome's per-answer XP and applyRoundXp's per-round XP
+  // below — one place for "grant this much XP, refresh the HUD chip, and
+  // toast a level-up with its rewards" so both paths stay in sync.
+  function grantXp(amount) {
+    const xpResult = addXp(amount);
+    if (GN.hud && GN.hud.refreshLevelChip) GN.hud.refreshLevelChip();
+    if (xpResult.leveledUp && GN.hud) {
+      let msg = 'Level up! You’re now Level ' + xpResult.level + '.';
+      const rewardParts = [];
+      if (xpResult.coinsAwarded > 0) rewardParts.push('+' + xpResult.coinsAwarded + ' coins');
+      if (xpResult.repairToolsAwarded > 0) rewardParts.push(xpResult.repairToolsAwarded + ' Repair Tools');
+      if (rewardParts.length) msg += ' ' + rewardParts.join(' and ') + '!';
+      GN.hud.showToast(msg);
+    }
+    return xpResult;
+  }
+
+  // --- round-end XP (Geo Shrink) --------------------------------------------
+  // Geo Shrink awards XP once per round, proportional to that round's final
+  // score, instead of a fixed per-answer amount — a "perfect" 1000-point
+  // round (an instant level-0 direct guess) pays out 50 XP on Easy, scaling
+  // with difficulty the same way everything else does (75 on Medium, 100 on
+  // Hard). modes/narrow.js suppresses its own per-answer XP (outcome.xp: 0
+  // on every applyOutcome call) and calls this once from finishGame instead.
+  const ROUND_XP_RATE = 0.05;
+  function applyRoundXp(points) {
+    const xpGain = Math.round(points * ROUND_XP_RATE * getSelectedDifficulty().xpMult);
+    return Object.assign({ xpGain }, grantXp(xpGain));
+  }
+
+  // outcome: {type: 'correct'|'wrong'|'partial', points, partialRatio, coins, xp}
   // Points are always EARNED, never spent — a wrong answer simply pays out
   // nothing rather than deducting from a shrinking pool. Psychologically,
   // "the number only ever goes up" reads as encouraging in a way a
@@ -456,20 +486,20 @@
     }
 
     const tier = getSelectedDifficulty();
-    let xpGain = 2; // small consolation XP even on a wrong answer, so play always progresses a little
-    if (outcome.type === 'correct') xpGain = 15;
-    else if (outcome.type === 'partial') xpGain = Math.round(8 * (outcome.partialRatio != null ? outcome.partialRatio : 0.5));
-    xpGain = Math.round(xpGain * tier.xpMult);
-    const xpResult = addXp(xpGain);
-    if (GN.hud && GN.hud.refreshLevelChip) GN.hud.refreshLevelChip();
-    if (xpResult.leveledUp && GN.hud) {
-      let msg = 'Level up! You’re now Level ' + xpResult.level + '.';
-      const rewardParts = [];
-      if (xpResult.coinsAwarded > 0) rewardParts.push('+' + xpResult.coinsAwarded + ' coins');
-      if (xpResult.repairToolsAwarded > 0) rewardParts.push(xpResult.repairToolsAwarded + ' Repair Tools');
-      if (rewardParts.length) msg += ' ' + rewardParts.join(' and ') + '!';
-      GN.hud.showToast(msg);
+    // A mode can pass an explicit xp (Geo Shrink passes 0 on every call —
+    // see applyRoundXp above — so its XP is only ever granted once, at
+    // round-end); otherwise the same fixed-per-answer default every other
+    // mode still uses.
+    let xpGain;
+    if (outcome.xp != null) {
+      xpGain = outcome.xp;
+    } else {
+      xpGain = 2; // small consolation XP even on a wrong answer, so play always progresses a little
+      if (outcome.type === 'correct') xpGain = 15;
+      else if (outcome.type === 'partial') xpGain = Math.round(8 * (outcome.partialRatio != null ? outcome.partialRatio : 0.5));
     }
+    xpGain = Math.round(xpGain * tier.xpMult);
+    const xpResult = grantXp(xpGain);
 
     // Coins: a mode can pass an explicit amount (Expedition's combo formula);
     // otherwise a small default so every mode's correct answers feed the
@@ -491,7 +521,7 @@
 
   GN.progression = {
     DIFFICULTIES, THEMES, SHIELD_PRICE, PASSPORT_TIERS,
-    reset, getScore, getMistakes, applyOutcome, getCurrentStreak, getBestStreak,
+    reset, getScore, getMistakes, applyOutcome, applyRoundXp, getCurrentStreak, getBestStreak,
     winBonusForMistakes, applyWinBonus,
     getXp, getLevel, addXp, getSelectedDifficultyId, getSelectedDifficulty, setSelectedDifficulty,
     isDifficultyUnlocked,

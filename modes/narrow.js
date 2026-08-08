@@ -129,13 +129,13 @@
     if (idx === ctx.state.targetIdx) {
       ctx.map.flashCountries([idx], 'flash-good');
       ctx.scheduleTimeout(() => {
-        GN.progression.applyOutcome({ type: 'correct', points: NARROW_CORRECT_POINTS });
+        GN.progression.applyOutcome({ type: 'correct', points: NARROW_CORRECT_POINTS, xp: 0 });
         ctx.state.level++;
         finishGame(ctx, [idx], false);
       }, 260);
     } else {
       const sel = ctx.map.flashCountries([idx], 'flash-bad');
-      GN.progression.applyOutcome({ type: 'wrong' });
+      GN.progression.applyOutcome({ type: 'wrong', xp: 0 });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
       GN.repairGlobe.setCracks(GN.progression.getMistakes());
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
@@ -177,7 +177,7 @@
       ctx.state.inputLocked = true;
       ctx.map.flashCountries(clickedSet, 'flash-good');
       ctx.scheduleTimeout(() => {
-        GN.progression.applyOutcome({ type: 'correct', points: NARROW_CORRECT_POINTS });
+        GN.progression.applyOutcome({ type: 'correct', points: NARROW_CORRECT_POINTS, xp: 0 });
         ctx.hud.updateStat('points', String(GN.progression.getScore()));
         ctx.state.level++;
         if (clickedSet.length === 1 || !ctx.state.path[ctx.state.level]) {
@@ -188,7 +188,7 @@
       }, 260);
     } else {
       const sel = ctx.map.flashCountries(clickedSet, 'flash-bad');
-      GN.progression.applyOutcome({ type: 'wrong' });
+      GN.progression.applyOutcome({ type: 'wrong', xp: 0 });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
       GN.repairGlobe.setCracks(GN.progression.getMistakes());
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
@@ -204,12 +204,12 @@
       ctx.map.flashCountries([idx], 'flash-good');
       ctx.scheduleTimeout(() => {
         const points = Math.max(0, DIRECT_GUESS_BASE - DIRECT_GUESS_STEP * ctx.state.level);
-        GN.progression.applyOutcome({ type: 'correct', points });
+        GN.progression.applyOutcome({ type: 'correct', points, xp: 0 });
         finishGame(ctx, [idx], true);
       }, 260);
     } else {
       const sel = ctx.map.flashCountries([idx], 'flash-bad');
-      GN.progression.applyOutcome({ type: 'wrong' });
+      GN.progression.applyOutcome({ type: 'wrong', xp: 0 });
       ctx.hud.updateStat('mistakes', String(GN.progression.getMistakes()));
       GN.repairGlobe.setCracks(GN.progression.getMistakes());
       ctx.hud.updateStat('points', String(GN.progression.getScore()));
@@ -252,6 +252,11 @@
       const level = ctx.state.level || 1;
       const mistakes = GN.progression.getMistakes();
       const score = GN.progression.getScore();
+      // Geo Shrink grants XP once per round, proportional to the round's
+      // final score, instead of the fixed per-answer amount every other
+      // mode uses (see GN.progression.applyRoundXp) — a perfect 1000-point
+      // round pays 50/75/100 XP on Easy/Medium/Hard.
+      const xpResult = GN.progression.applyRoundXp(score);
       ctx.hud.updateStat('round', String(level));
       ctx.hud.updateStat('remaining', '1');
       ctx.hud.updateStat('points', String(score));
@@ -273,7 +278,8 @@
           title: ctx.data.names[ctx.state.targetIdx] + '!',
           sub: (isDirectGuess
             ? 'Guessed directly for ' + score + ' points' + mistakeTxt + '.'
-            : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.') + visaTxt,
+            : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.') +
+            ' +' + xpResult.xpGain + ' XP.' + visaTxt,
         });
       }, CELEBRATION_HOLD_MS);
     });
