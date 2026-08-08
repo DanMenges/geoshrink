@@ -230,46 +230,53 @@
   function finishGame(ctx, finalSet, isDirectGuess) {
     const finalIdxSet = new Set(finalSet);
     ctx.state.endgame = null;
-    // Deliberately no camera zoom here anymore — the map stays exactly where
-    // the last narrowing step already left it (still reasonably close in,
-    // just not a fresh zoom onto the single winner) and the celebration
-    // plays in place instead of the view jumping.
-    ctx.map.paintClasses({
-      'group-a': () => false,
-      'group-b': () => false,
-      'guessable': () => false,
-      'eliminated': (i) => !finalIdxSet.has(i),
-    });
-    ctx.map.flashCountries(finalSet, 'flash-good');
-    celebrateStamp(ctx, ctx.state.targetIdx);
-
-    const level = ctx.state.level || 1;
-    const mistakes = GN.progression.getMistakes();
-    const score = GN.progression.getScore();
-    ctx.hud.updateStat('round', String(level));
-    ctx.hud.updateStat('remaining', '1');
-    ctx.hud.updateStat('points', String(score));
-    ctx.hud.setProgress(1);
-    const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
-    // A flawless run (repaired mistakes count as never having happened —
-    // see GN.progression.useRepairTool) advances this country's passport
-    // collection: Tourist Visa -> Long-Stay Visa -> Passport over three separate
-    // flawless completions of the SAME country.
-    let visaTxt = '';
-    if (mistakes === 0) {
-      const result = GN.progression.recordFlawlessCompletion(ctx.state.targetIdx);
-      if (result.tierUp) {
-        visaTxt = ' Earned a ' + result.tierLabel + ' for ' + ctx.data.names[ctx.state.targetIdx] + '!';
-      }
-    }
-    ctx.scheduleTimeout(() => {
-      ctx.hud.showWin({
-        title: ctx.data.names[ctx.state.targetIdx] + '!',
-        sub: (isDirectGuess
-          ? 'Guessed directly for ' + score + ' points' + mistakeTxt + '.'
-          : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.') + visaTxt,
+    // Pulls back OUT to the round's original wide framing (the same view it
+    // started with, before any narrowing) rather than staying at whatever
+    // tight crop the last narrowing step happened to leave, or zooming
+    // further in on the winner — gives the player a "farther distance" look
+    // at the result in its broader context. The celebration only plays once
+    // that settles, so the stamp lands accurately on the (now smaller,
+    // farther-away) highlighted country instead of chasing a moving view.
+    ctx.map.setActiveFeatureIndices(ctx.state.pool);
+    const wideProj = ctx.map.buildProjection(ctx.state.pool.map((i) => ctx.data.features[i]));
+    ctx.map.animateToProjection(wideProj, () => {
+      ctx.map.paintClasses({
+        'group-a': () => false,
+        'group-b': () => false,
+        'guessable': () => false,
+        'eliminated': (i) => !finalIdxSet.has(i),
       });
-    }, CELEBRATION_HOLD_MS);
+      ctx.map.flashCountries(finalSet, 'flash-good');
+      celebrateStamp(ctx, ctx.state.targetIdx);
+
+      const level = ctx.state.level || 1;
+      const mistakes = GN.progression.getMistakes();
+      const score = GN.progression.getScore();
+      ctx.hud.updateStat('round', String(level));
+      ctx.hud.updateStat('remaining', '1');
+      ctx.hud.updateStat('points', String(score));
+      ctx.hud.setProgress(1);
+      const mistakeTxt = mistakes ? ' (' + mistakes + ' mistake' + (mistakes === 1 ? '' : 's') + ')' : '';
+      // A flawless run (repaired mistakes count as never having happened —
+      // see GN.progression.useRepairTool) advances this country's passport
+      // collection: Tourist Visa -> Long-Stay Visa -> Passport over three
+      // separate flawless completions of the SAME country.
+      let visaTxt = '';
+      if (mistakes === 0) {
+        const result = GN.progression.recordFlawlessCompletion(ctx.state.targetIdx);
+        if (result.tierUp) {
+          visaTxt = ' Earned a ' + result.tierLabel + ' for ' + ctx.data.names[ctx.state.targetIdx] + '!';
+        }
+      }
+      ctx.scheduleTimeout(() => {
+        ctx.hud.showWin({
+          title: ctx.data.names[ctx.state.targetIdx] + '!',
+          sub: (isDirectGuess
+            ? 'Guessed directly for ' + score + ' points' + mistakeTxt + '.'
+            : 'Scored ' + score + ' points — found in ' + level + ' round' + (level === 1 ? '' : 's') + mistakeTxt + '.') + visaTxt,
+        });
+      }, CELEBRATION_HOLD_MS);
+    });
   }
 
   // --- celebration: an "official stamp" seal, landing right on the map ----
