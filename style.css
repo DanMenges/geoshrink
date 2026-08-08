@@ -121,12 +121,16 @@ svg#map { display: block; width: 100%; height: 100%; }
 .country.cont-5 { fill: var(--cont-5); }
 .country.cont-other { fill: var(--eliminated-fill); stroke: var(--eliminated-stroke); }
 
-/* Rivers/lakes overlay -- display-only spike (see engine/map.js's
-   setWaterFeatures/setWaterVisible), not yet clickable/gameplay. */
+/* Rivers/lakes overlay -- Water Wisdom's playing field, also shown
+   read-only in World Atlas (see engine/map.js's setWaterFeatures/
+   setWaterVisible/setWaterInteractive). */
 .water-layer { pointer-events: none; }
 .water-layer.hidden { display: none; }
 .river { fill: none; stroke: #2f7fd6; stroke-width: 1; stroke-linejoin: round; stroke-linecap: round; opacity: 0.85; }
 .lake { fill: #2f7fd6; stroke: #1c5aa3; stroke-width: 0.4; opacity: 0.85; }
+/* Invisible wide click target standing in for a river's real 1px stroke --
+   only added to the DOM while a mode has set water interactive. */
+.river-hit { fill: none; stroke: transparent; stroke-width: 10; pointer-events: stroke; cursor: pointer; }
 
 .country-label {
   pointer-events: none;

@@ -288,12 +288,49 @@
     return proj;
   }
 
-  // --- water overlay (rivers/lakes) -- display-only for now, see gWater ---
+  // --- water overlay (rivers/lakes) -- Water Wisdom's playing field --------
   let waterRivers = [], waterLakes = [];
+  let waterInteractive = false;
+  let waterHandlers = null;
   function redrawWater() {
     if (!pathGen) return;
     gWater.selectAll('path.river').data(waterRivers).join('path').attr('class', 'river').attr('d', pathGen);
-    gWater.selectAll('path.lake').data(waterLakes).join('path').attr('class', 'lake').attr('d', pathGen);
+    gWater.selectAll('path.lake').data(waterLakes).join('path').attr('class', 'lake').attr('d', pathGen)
+      .style('pointer-events', waterInteractive ? 'all' : 'none')
+      .style('cursor', waterInteractive ? 'pointer' : 'default')
+      .on('click', waterInteractive ? function (event, d) {
+        waterHandlers && waterHandlers.onWaterClick && waterHandlers.onWaterClick('lake', waterLakes.indexOf(d));
+      } : null)
+      .on('mouseenter', waterInteractive ? function (event, d) {
+        waterHandlers && waterHandlers.onWaterHover && waterHandlers.onWaterHover('lake', waterLakes.indexOf(d), event);
+      } : null)
+      .on('mouseleave', waterInteractive ? function () {
+        waterHandlers && waterHandlers.onWaterLeave && waterHandlers.onWaterLeave();
+      } : null);
+
+    // Rivers are thin lines -- a real click almost never lands exactly on a
+    // 1px stroke, so a separate invisible, much-wider "hit stroke" (only
+    // added to the DOM at all while interactive) does the actual clicking;
+    // the thin visible .river path stays purely cosmetic.
+    gWater.selectAll('path.river-hit')
+      .data(waterInteractive ? waterRivers : [])
+      .join('path')
+      .attr('class', 'river-hit')
+      .attr('d', pathGen)
+      .on('click', function (event, d) {
+        waterHandlers && waterHandlers.onWaterClick && waterHandlers.onWaterClick('river', waterRivers.indexOf(d));
+      })
+      .on('mouseenter', function (event, d) {
+        waterHandlers && waterHandlers.onWaterHover && waterHandlers.onWaterHover('river', waterRivers.indexOf(d), event);
+      })
+      .on('mouseleave', function () {
+        waterHandlers && waterHandlers.onWaterLeave && waterHandlers.onWaterLeave();
+      });
+  }
+  function setWaterInteractive(on, handlers) {
+    waterInteractive = on;
+    waterHandlers = handlers || null;
+    redrawWater();
   }
   function setWaterFeatures(rivers, lakes) {
     waterRivers = rivers || [];
@@ -652,7 +689,8 @@
     drawBaseMap, paintClasses, clearFlashClasses, flashCountries,
     setActiveFeatureIndices, setFiftyMFeatures, onNeedHighRes, setBaseFeatures,
     setRotation, getRotation, getZoom, resetRotation,
-    setLabels, setWaterFeatures, setWaterVisible,
+    setLabels, setWaterFeatures, setWaterVisible, setWaterInteractive,
+    getWaterRivers: () => waterRivers, getWaterLakes: () => waterLakes,
     get projection() { return projection; },
     get pathGen() { return pathGen; },
     get activeTier() { return activeTier; },

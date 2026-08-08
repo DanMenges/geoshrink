@@ -4,8 +4,8 @@
   const ICONS = {
     // world with a split line — narrowing the globe in two
     narrow: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M4.5 8h15M4.5 16h15"/>',
-    // expanding rings — revealing territory outward from a point
-    fog: '<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="5.5"/><path d="M19.5 12a7.5 7.5 0 0 0-2-5.1" stroke-linecap="round"/>',
+    // a droplet above rippling water
+    water: '<path d="M12 3.5c1.7 2.6 3.4 4.8 3.4 6.8a3.4 3.4 0 1 1-6.8 0c0-2 1.7-4.2 3.4-6.8Z"/><path d="M3 16.5c2-1.8 4-1.8 6 0s4 1.8 6 0 4-1.8 6 0" stroke-linecap="round"/><path d="M3 20c2-1.8 4-1.8 6 0s4 1.8 6 0 4-1.8 6 0" stroke-linecap="round"/>',
     // two adjacent regions sharing an edge
     neighbor: '<path d="M4 6h7v12H4z"/><path d="M11 6h9v12h-9z"/><path d="M11 6v12" stroke-width="2.4"/>',
     // two bars of different height, being compared
@@ -29,7 +29,7 @@
     { id: 'narrow', title: 'Geo Shrink', desc: 'The world splits in two each round — narrow down to the target country, or gamble on a direct guess.' },
     { id: 'expedition', title: 'Expedition', desc: 'Travel a random border-by-border path from an origin to a destination — click each named country to press on and collect points.' },
     { id: 'blocs', title: 'Bloc Bingo', desc: 'Six countries, one doesn’t belong — spot the odd one out of the alliance.' },
-    { id: 'fog', title: 'Fog of War', desc: 'Explore outward from a home country. Wrong guesses cost nothing, and your progress is saved as you go.' },
+    { id: 'water', title: 'Water Wisdom', desc: 'Click the named river or lake — oceans and seas to come. Wrong guesses cost nothing.' },
     { id: 'flags', title: 'Flag Frenzy', desc: 'Identify the country from its flag.' },
     { id: 'capitals', title: 'Capital Match', desc: 'Match the capital city to its country.' },
     { id: 'neighbor', title: 'Neighbor Match', desc: 'Click every country that shares a border with the reference country.' },
